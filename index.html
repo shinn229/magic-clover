@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magic Clover</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='g1' cx='40%25' cy='30%25' r='70%25'%3E%3Cstop offset='0%25' stop-color='%23ffe066'/%3E%3Cstop offset='40%25' stop-color='%23d4a017'/%3E%3Cstop offset='100%25' stop-color='%237a5200'/%3E%3C/radialGradient%3E%3CradialGradient id='g2' cx='60%25' cy='60%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23fff0a0'/%3E%3Cstop offset='100%25' stop-color='%23c8920a'/%3E%3C/radialGradient%3E%3Cfilter id='sh'%3E%3CfeDropShadow dx='0' dy='1' stdDeviation='2' flood-color='%23000' flood-opacity='0.5'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100' height='100' rx='18' fill='%230f1a08'/%3E%3Crect x='1' y='1' width='98' height='98' rx='17' fill='none' stroke='%23d4a017' stroke-width='2'/%3E%3Cg filter='url(%23sh)'%3E%3Ccircle cx='50' cy='34' r='21' fill='url(%23g1)'/%3E%3Ccircle cx='29' cy='58' r='21' fill='url(%23g1)'/%3E%3Ccircle cx='71' cy='58' r='21' fill='url(%23g1)'/%3E%3Crect x='44' y='60' width='12' height='22' rx='3' fill='url(%23g1)'/%3E%3Crect x='31' y='79' width='38' height='9' rx='4' fill='url(%23g1)'/%3E%3C/g%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --clover: #9acd32;
+  --clover-dark: #7aaa18;
+  --clover-darker: #5a8a00;
+  --nav-bg: #1a2410;
+  --nav-border: #9acd32;
+  --green: #3a8a4a;
+  --green-dark: #2a6a3a;
+  --card-bg: #131e2e;
+  --card-hover: #1a2a40;
+  --tag-bg: #f5a623;
+  --tag-text: #5a3a00;
+  --surface: #0a1628;
+  --text: #e8edf5;
+  --muted: #8a9bb5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--surface); color: var(--text); min-height: 100vh; }
+
+/* ===== NAV ===== */
+nav {
+  background: linear-gradient(180deg, #0f1a08 0%, #1a2410 60%, #1e2c12 100%);
+  padding: 0 20px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 2px solid var(--clover);
+  box-shadow: 0 2px 16px rgba(154,205,50,0.18);
+}
+
+/* ロゴ */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+  padding-right: 16px;
+  position: relative;
+  user-select: none;
+}
+.nav-logo-suit {
+  font-size: 22px;
+  color: var(--clover);
+  line-height: 1;
+}
+.nav-logo-name {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--clover);
+  text-transform: uppercase;
+}
+
+/* 人気動画ランキングパネル */
+.ranking-panel {
+  display: none;
+  position: fixed;
+  top: 66px;
+  left: 16px;
+  width: 340px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-top: 3px solid var(--clover);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  z-index: 9000;
+}
+.ranking-panel.open { display: block; }
+/* ranking-panel は overlay より上に確実に置く */
+.ranking-panel { z-index: 9000; }
+.ranking-panel-header {
+  background: var(--nav-bg);
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clover);
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(154,205,50,0.2);
+}
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.12s;
+  border-bottom: 1px solid #f0f0f0;
+  width: 100%;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+}
+.ranking-item:last-child { border-bottom: none; }
+.ranking-item:hover { background: #f5fae8; }
+.ranking-rank {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ccc;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ranking-rank.top1 { color: #d4af37; }
+.ranking-rank.top2 { color: #aaa; }
+.ranking-rank.top3 { color: #c67a3c; }
+.ranking-thumb {
+  width: 72px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #1a2535;
+}
+.ranking-info { flex: 1; min-width: 0; }
+.ranking-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #111;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ranking-likes {
+  font-size: 11px;
+  color: #c02020;
+  margin-top: 3px;
+}
+.ranking-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  background: transparent;
+}
+.ranking-overlay.open { display: block; }
+/* ranking-panel は overlay より上に確実に置く */
+.ranking-panel { z-index: 9000; }
+
+/* nav right */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.nav-links a {
+  color: rgba(255,255,255,0.75);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+}
+.nav-links a:hover { color: var(--clover); background: rgba(154,205,50,0.08); }
+.nav-post-btn {
+  background: var(--clover);
+  color: #1a2a00;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(154,205,50,0.3);
+  margin-left: 6px;
+}
+.nav-post-btn:hover { background: var(--clover-dark); box-shadow: 0 3px 12px rgba(154,205,50,0.4); }
+
+/* ハンバーガーボタン（スマホのみ表示） */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.hamburger-btn span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--clover);
+  border-radius: 2px;
+  transition: all 0.25s;
+}
+.hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.open span:nth-child(2) { opacity: 0; }
+.hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ドロワーオーバーレイ */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: rgba(0,0,0,0.4);
+}
+.drawer-overlay.open { display: block; }
+
+/* ドロワーメニュー本体 */
+.nav-drawer {
+  display: none;
+  position: fixed;
+  top: 64px;
+  right: 0;
+  width: 230px;
+  background: #1a2c10;
+  border-left: 2px solid var(--clover);
+  border-bottom: 2px solid var(--clover);
+  border-radius: 0 0 0 14px;
+  z-index: 9100;
+  box-shadow: -4px 8px 28px rgba(0,0,0,0.6);
+  padding: 8px 0 14px;
+}
+.nav-drawer.open { display: block; }
+.nav-drawer a {
+  display: block;
+  color: rgba(255,255,255,0.88);
+  font-size: 15px;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 13px 22px;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-drawer a:hover { color: var(--clover); background: rgba(154,205,50,0.1); }
+.nav-drawer .drawer-post {
+  display: block;
+  width: calc(100% - 28px);
+  margin: 8px 14px 4px;
+  background: var(--clover);
+  color: #1a2a00;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+}
+.nav-drawer .drawer-post:hover { background: var(--clover-dark); }
+.drawer-divider { border: none; border-top: 1px solid rgba(154,205,50,0.2); margin: 6px 0; }
+
+@media (max-width: 640px) {
+  .hamburger-btn { display: flex; }
+  .nav-right { display: none !important; }
+}
+
+/* ===== PAGES ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ===== LOGIN ===== */
+#login-page {
+  background: linear-gradient(135deg, #0f1a08 0%, #1a2410 100%);
+  min-height: calc(100vh - 64px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+#login-page.active { display: flex; }
+.login-box {
+  background: #fff;
+  padding: 40px 40px 48px;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  border-top: 4px solid var(--clover);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.login-box h1 { font-size: 26px; font-weight: 700; margin-bottom: 28px; color: #111; }
+.login-field { margin-bottom: 16px; }
+.login-field label { display: block; font-size: 14px; color: #333; margin-bottom: 6px; }
+.login-field input { width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 10px 12px; font-size: 14px; outline: none; transition: border 0.15s; font-family: inherit; }
+.login-field input:focus { border-color: var(--clover); }
+.login-row { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+.login-row input { flex: 1; }
+.btn-primary { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 10px 22px; font-size: 14px; cursor: pointer; font-family: inherit; font-weight: 700; }
+.btn-primary:hover { background: var(--clover-dark); }
+.login-or { font-size: 13px; color: #555; margin-bottom: 12px; }
+.btn-passkey { background: #4a3fa0; color: #fff; border: none; border-radius: 20px; padding: 10px 22px; font-size: 14px; cursor: pointer; font-family: inherit; margin-right: 8px; }
+.btn-mail { background: #ccc; color: #666; border: none; border-radius: 20px; padding: 10px 22px; font-size: 14px; cursor: pointer; font-family: inherit; }
+
+/* ===== CLUB PAGE ===== */
+#club-page { min-height: calc(100vh - 64px); }
+.club-header { background: #fff; color: #111; padding: 20px 24px 0; border-bottom: 1px solid #e0e0e0; }
+.club-title { font-size: 26px; font-weight: 700; margin-bottom: 16px; color: #1a1a1a; }
+.tag-tabs { display: flex; gap: 0; border-bottom: 2px solid #e0e0e0; }
+.tag-tab { padding: 10px 18px; font-size: 14px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; white-space: nowrap; }
+.tag-tab.active { color: var(--clover-darker); border-bottom-color: var(--clover); font-weight: 700; }
+.tag-tab:hover:not(.active) { color: #222; }
+
+.tags-area { background: #fff; padding: 14px 24px; border-bottom: 1px solid #e0e0e0; min-height: 52px; }
+.tags-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-pill { display: inline-flex; align-items: center; gap: 4px; background: var(--tag-bg); color: var(--tag-text); font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 6px; cursor: pointer; user-select: none; transition: opacity 0.15s, transform 0.1s; }
+.tag-pill .count { font-size: 11px; font-weight: 400; opacity: 0.8; }
+.tag-pill .plus { font-size: 13px; font-weight: 700; margin-left: 2px; opacity: 0.7; }
+.tag-pill.selected { outline: 2px solid #c07800; transform: scale(1.04); }
+.tag-pill:hover { opacity: 0.85; }
+
+.pagination-wrap { background: #fff; padding: 10px 24px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.page-btn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; cursor: pointer; color: #333; transition: all 0.15s; }
+.page-btn:hover { background: #f0f0f0; }
+.page-btn.active { background: var(--clover); color: #1a2a00; border-color: var(--clover); font-weight: 700; }
+.page-ellipsis { padding: 0 4px; color: #888; font-size: 13px; }
+
+.search-bar { background: #fff; padding: 10px 24px; border-bottom: 1px solid #e0e0e0; display: flex; gap: 10px; align-items: center; }
+.search-input { flex: 1; border: 1px solid #ccc; border-radius: 6px; padding: 8px 14px; font-size: 14px; font-family: inherit; outline: none; }
+.search-input:focus { border-color: var(--clover); }
+.search-count { font-size: 13px; color: #666; white-space: nowrap; }
+
+.video-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px 24px; background: #eef3e4; min-height: 400px; }
+@media (max-width: 800px) { .video-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 500px) { .video-grid { grid-template-columns: 1fr; } }
+
+.video-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.15s; }
+.video-card:hover { transform: translateY(-2px); background: var(--card-hover); }
+.video-thumb { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #0d1520; }
+.video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb-placeholder { width: 100%; height: 100%; background: #1a2535; display: flex; align-items: center; justify-content: center; }
+.play-icon { width: 40px; height: 40px; background: rgba(154,205,50,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.play-icon::after { content: ''; border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 14px solid rgba(154,205,50,0.8); margin-left: 3px; }
+.video-info { padding: 10px 12px 12px; }
+.video-title { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.5; margin-bottom: 5px; }
+.video-date { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+.video-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.video-tag { display: inline-flex; align-items: center; gap: 2px; background: var(--tag-bg); color: var(--tag-text); font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; cursor: pointer; }
+
+.filter-banner { background: #fff8e0; border-bottom: 1px solid #f0c040; padding: 8px 24px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: #5a4000; flex-wrap: wrap; }
+.filter-banner button { background: none; border: 1px solid #c09000; border-radius: 4px; padding: 3px 10px; font-size: 12px; cursor: pointer; color: #5a4000; }
+.no-results { text-align: center; padding: 60px; color: #888; font-size: 15px; grid-column: 1/-1; }
+
+/* ===== PLAYER PAGE ===== */
+#player-page { background: #fff; min-height: calc(100vh - 64px); }
+.player-video-wrap { background: #000; width: 100%; }
+.player-video-wrap iframe { width: 100%; aspect-ratio: 16/9; display: block; border: none; }
+.player-info { padding: 14px 24px 0; border-bottom: 1px solid #eee; }
+.player-title { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 8px; line-height: 1.4; }
+.player-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.player-tag { display: inline-flex; align-items: center; gap: 3px; background: var(--tag-bg); color: var(--tag-text); font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 4px; cursor: pointer; }
+.player-actions { display: flex; align-items: center; gap: 8px; padding: 10px 0 14px; flex-wrap: wrap; }
+.action-btn { display: flex; align-items: center; gap: 6px; background: #f4f4f4; border: 1px solid #ddd; border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; color: #333; transition: background 0.15s; user-select: none; }
+.action-btn:hover { background: #e8e8e8; }
+.action-btn.liked { background: #fff0f0; border-color: #e04040; color: #c02020; }
+.action-btn.saved { background: #f0f7ff; border-color: #3080e0; color: #2060c0; }
+.btn-back { background: #e8f5d0; color: var(--clover-darker); border: none; border-radius: 20px; padding: 7px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; margin-left: auto; }
+.btn-back:hover { background: #d4edb0; }
+
+/* ===== COMMENTS ===== */
+.comments-section { padding: 20px 24px 40px; background: #fff; }
+.comments-title { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 16px; }
+.comment-form { display: flex; gap: 10px; margin-bottom: 22px; align-items: flex-start; }
+.comment-avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--clover); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #1a2a00; flex-shrink: 0; }
+.comment-input-wrap { flex: 1; }
+.comment-textarea { width: 100%; border: none; border-bottom: 1px solid #ccc; padding: 6px 0; font-size: 14px; font-family: inherit; outline: none; resize: none; min-height: 34px; background: transparent; transition: border-color 0.15s; }
+.comment-textarea:focus { border-bottom-color: var(--clover); }
+.comment-form-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 8px; }
+.btn-comment-cancel { background: none; border: none; border-radius: 4px; padding: 7px 14px; font-size: 13px; cursor: pointer; font-family: inherit; color: #666; }
+.btn-comment-post { background: var(--clover); color: #1a2a00; border: none; border-radius: 20px; padding: 7px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-comment-post:disabled { background: #ddd; color: #aaa; cursor: not-allowed; }
+.comment-list { display: flex; flex-direction: column; gap: 18px; }
+.comment-item { display: flex; gap: 10px; }
+.comment-body { flex: 1; }
+.comment-meta { display: flex; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+.comment-name { font-size: 13px; font-weight: 700; color: #111; }
+.comment-date { font-size: 11px; color: #aaa; }
+.comment-text { font-size: 14px; color: #333; line-height: 1.6; }
+.comment-like-btn { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #999; cursor: pointer; background: none; border: none; font-family: inherit; padding: 3px 0; margin-top: 4px; }
+.comment-like-btn:hover { color: #c02020; }
+.comment-like-btn.liked { color: #c02020; }
+
+/* ===== MYPAGE ===== */
+#mypage-page { background: #f5f7fa; min-height: calc(100vh - 64px); padding: 28px 24px; }
+.mypage-header { margin-bottom: 28px; }
+.mypage-title { font-size: 22px; font-weight: 700; color: #fff; }
+.mypage-section { margin-bottom: 32px; }
+.mypage-section-title { font-size: 16px; font-weight: 700; color: var(--clover); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(154,205,50,0.3); }
+.mypage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 700px) { .mypage-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 420px) { .mypage-grid { grid-template-columns: 1fr; } }
+.mypage-empty { color: #aaa; font-size: 14px; padding: 20px 0; }
+.mypage-card { background: var(--card-bg); border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.15s; }
+.mypage-card:hover { transform: translateY(-2px); }
+.mypage-thumb { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #0d1520; }
+.mypage-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.mypage-info { padding: 8px 10px 10px; }
+.mypage-card-title { font-size: 11px; color: var(--text); line-height: 1.4; }
+
+/* ===== POST PAGE ===== */
+#post-page { background: #eef3e4; min-height: calc(100vh - 64px); display: none; padding: 28px 20px; }
+#post-page.active { display: block; }
+.post-container { max-width: 680px; margin: 0 auto; background: #fff; border-radius: 12px; border: 1px solid #cde090; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+.post-header { background: linear-gradient(135deg, #0f1a08 0%, #1a2410 100%); padding: 18px 28px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid var(--clover); }
+.post-header h1 { font-size: 18px; font-weight: 700; color: var(--clover); font-family: 'Cinzel', serif; letter-spacing: 1px; }
+.post-body { padding: 28px; }
+.post-field { margin-bottom: 22px; }
+.post-field label { display: block; font-size: 14px; font-weight: 700; color: #222; margin-bottom: 8px; }
+.post-field label .required { color: #e03030; margin-left: 4px; font-size: 12px; font-weight: 400; }
+.post-field label .optional { color: #888; margin-left: 4px; font-size: 12px; font-weight: 400; }
+.post-field input[type="text"], .post-field input[type="url"] { width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-family: inherit; outline: none; transition: border 0.15s, box-shadow 0.15s; color: #111; }
+.post-field input:focus { border-color: var(--clover); box-shadow: 0 0 0 3px rgba(154,205,50,0.15); }
+.post-field .hint { font-size: 12px; color: #888; margin-top: 5px; line-height: 1.5; }
+.tag-input-wrap { border: 1px solid #ccc; border-radius: 6px; padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; min-height: 46px; cursor: text; transition: border 0.15s, box-shadow 0.15s; }
+.tag-input-wrap:focus-within { border-color: var(--clover); box-shadow: 0 0 0 3px rgba(154,205,50,0.15); }
+.tag-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--tag-bg); color: var(--tag-text); font-size: 12px; font-weight: 700; padding: 3px 8px; border-radius: 4px; }
+.tag-chip .remove-tag { cursor: pointer; font-size: 14px; opacity: 0.6; background: none; border: none; color: var(--tag-text); padding: 0; font-family: inherit; }
+.tag-chip .remove-tag:hover { opacity: 1; }
+.tag-text-input { border: none; outline: none; font-size: 14px; font-family: inherit; flex: 1; min-width: 100px; color: #111; background: transparent; }
+.yt-preview { display: none; background: #f0f7e0; border: 1px solid #b8d880; border-radius: 8px; padding: 12px 14px; margin-top: 10px; gap: 12px; align-items: center; }
+.yt-preview.visible { display: flex; }
+.yt-preview img { width: 88px; height: 50px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.yt-preview-ok { color: var(--clover-darker); font-size: 12px; font-weight: 700; margin-top: 3px; }
+.unlisted-note { background: #fffbe6; border: 1px solid #ffe066; border-radius: 6px; padding: 10px 14px; font-size: 12px; color: #6a5000; margin-top: 8px; display: none; line-height: 1.6; }
+.unlisted-note.visible { display: block; }
+.post-submit-area { display: flex; gap: 12px; align-items: center; padding-top: 10px; border-top: 1px solid #f0f0f0; margin-top: 4px; }
+.btn-submit { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 11px 26px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.btn-submit:hover { background: var(--clover-dark); }
+.btn-submit:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+.btn-cancel-post { background: none; color: #666; border: 1px solid #ccc; border-radius: 6px; padding: 11px 18px; font-size: 14px; cursor: pointer; font-family: inherit; }
+.no-perm { text-align: center; padding: 60px 28px; color: #888; }
+
+.toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%); background: #2d4010; color: var(--clover); border: 1px solid var(--clover); padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; z-index: 9999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; }
+.toast.show { opacity: 1; }
+
+/* ===== MEMBER PAGE ===== */
+#member-page { background: #f5f7fa; min-height: calc(100vh - 64px); padding: 28px 20px; }
+.member-container { max-width: 600px; margin: 0 auto; }
+.member-page-title { font-size: 22px; font-weight: 700; color: var(--surface); background: var(--nav-bg); padding: 20px 28px; border-radius: 12px 12px 0 0; border-bottom: 3px solid var(--clover); color: var(--clover); font-family: 'Cinzel', serif; letter-spacing: 1px; }
+
+/* アバター選択 */
+.member-avatar-section { background: #fff; padding: 24px 28px; border-bottom: 1px solid #eee; }
+.member-section-label { font-size: 13px; font-weight: 700; color: #666; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px; }
+.avatar-current { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.avatar-preview {
+  width: 60px; height: 60px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700;
+  border: 3px solid var(--clover);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.avatar-preview.text-mode { font-size: 20px; }
+.avatar-name { font-size: 15px; font-weight: 700; color: #111; }
+.avatar-sub { font-size: 12px; color: #888; margin-top: 2px; }
+
+.avatar-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 14px; }
+@media (max-width: 480px) { .avatar-grid { grid-template-columns: repeat(6, 1fr); } }
+.avatar-opt {
+  width: 100%; aspect-ratio: 1;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.15s, transform 0.1s;
+  user-select: none;
+}
+.avatar-opt:hover { transform: scale(1.1); }
+.avatar-opt.selected { border-color: var(--clover); }
+
+.avatar-initial-wrap { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+.avatar-initial-input { border: 1px solid #ccc; border-radius: 6px; padding: 8px 12px; font-size: 14px; font-family: inherit; outline: none; width: 120px; }
+.avatar-initial-input:focus { border-color: var(--clover); }
+.avatar-color-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.avatar-color-opt {
+  width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.12s, transform 0.1s;
+}
+.avatar-color-opt:hover { transform: scale(1.15); }
+.avatar-color-opt.selected { border-color: #333; }
+
+/* アカウント設定セクション */
+.member-settings-section { background: #fff; padding: 24px 28px; }
+.settings-field { margin-bottom: 20px; }
+.settings-field label { display: block; font-size: 13px; font-weight: 700; color: #555; margin-bottom: 6px; }
+.settings-field-row { display: flex; gap: 8px; align-items: center; }
+.settings-input { flex: 1; border: 1px solid #ddd; border-radius: 6px; padding: 9px 12px; font-size: 14px; font-family: inherit; outline: none; color: #111; background: #fafafa; }
+.settings-input:focus { border-color: var(--clover); background: #fff; }
+.settings-input:disabled { background: #f5f5f5; color: #999; cursor: not-allowed; }
+.btn-settings-edit { background: none; border: 1px solid #ccc; border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: inherit; color: #555; white-space: nowrap; transition: border 0.15s; }
+.btn-settings-edit:hover { border-color: var(--clover); color: var(--clover-darker); }
+.btn-settings-save { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-settings-save:hover { background: var(--clover-dark); }
+.settings-hint { font-size: 12px; color: #aaa; margin-top: 4px; }
+.member-save-bar { background: #fff; padding: 16px 28px 24px; border-radius: 0 0 12px 12px; border-top: 1px solid #eee; display: flex; gap: 12px; }
+.btn-member-save { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.btn-member-save:hover { background: var(--clover-dark); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <span class="nav-logo" onclick="toggleRanking()" title="人気動画ランキング">
+    <span class="nav-logo-suit">♣</span>
+    <span class="nav-logo-name">Magic Clover</span>
+  </span>
+
+  <!-- PC: ログイン済みメニュー -->
+  <div class="nav-right" id="nav-auth" style="display:none">
+    <div class="nav-links">
+      <a onclick="showPage('club')">動画</a>
+      <a onclick="showPage('member')">会員</a>
+      <a onclick="showPage('mypage')">マイページ</a>
+    </div>
+    <button class="nav-post-btn" onclick="showPage('post')">＋ 投稿する</button>
+    <div class="nav-links">
+      <a onclick="logout()" style="color:rgba(255,255,255,0.5);font-size:12px;">サインアウト</a>
+    </div>
+  </div>
+  <!-- PC: ゲストメニュー -->
+  <div class="nav-right" id="nav-guest">
+    <div class="nav-links"><a onclick="showPage('login')">サインイン</a></div>
+  </div>
+  <!-- スマホ: ハンバーガーボタン -->
+  <button class="hamburger-btn" id="hamburger-btn" onclick="toggleDrawer()" aria-label="メニュー">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ランキングパネル（navの外・fixed配置） -->
+<div class="ranking-panel" id="ranking-panel">
+  <div class="ranking-panel-header">♥ 人気動画ランキング</div>
+  <div id="ranking-list"></div>
+</div>
+
+<!-- ランキングオーバーレイ -->
+<div class="ranking-overlay" id="ranking-overlay" onclick="closeRanking()"></div>
+
+<!-- ドロワーオーバーレイ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<!-- ドロワーメニュー（ログイン済み） -->
+<div class="nav-drawer" id="nav-drawer-auth">
+  <a onclick="closeDrawer();showPage('club')">動画</a>
+  <a onclick="closeDrawer();showPage('member')">会員</a>
+  <a onclick="closeDrawer();showPage('mypage')">マイページ</a>
+  <hr class="drawer-divider">
+  <button class="drawer-post" onclick="closeDrawer();showPage('post')">＋ 投稿する</button>
+  <hr class="drawer-divider">
+  <a onclick="closeDrawer();logout()" style="color:rgba(255,255,255,0.45);font-size:13px;">サインアウト</a>
+</div>
+<!-- ドロワーメニュー（ゲスト） -->
+<div class="nav-drawer" id="nav-drawer-guest">
+  <a onclick="closeDrawer();showPage('login')">サインイン</a>
+</div>
+
+<!-- LOGIN -->
+<div id="login-page" class="page">
+  <div class="login-box">
+    <h1>サインイン</h1>
+    <div class="login-field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="メールアドレス"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="login-field">
+      <label>パスワード</label>
+      <div class="login-row">
+        <input type="password" id="login-pass" placeholder="パスワード"
+          onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="btn-primary" onclick="doLogin()">サインイン</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <input type="checkbox" id="remember-me" style="width:16px;height:16px;accent-color:#9acd32;cursor:pointer;">
+      <label for="remember-me" style="font-size:13px;color:#555;cursor:pointer;margin:0;">メールアドレスとパスワードを保存する</label>
+    </div>
+    <div id="login-error" style="display:none;background:#fff0f0;border:1px solid #f08080;border-radius:6px;padding:10px 14px;font-size:13px;color:#c02020;margin-top:8px;">
+      メールアドレスまたはパスワードが正しくありません
+    </div>
+  </div>
+</div>
+
+<!-- CLUB PAGE -->
+<div id="club-page" class="page">
+  <div class="club-header">
+    <h1 class="club-title">国際信州大学奇術愛好会</h1>
+    <div class="tag-tabs">
+      <span class="tag-tab active" onclick="switchTab(0)">演目</span>
+      <span class="tag-tab" onclick="switchTab(1)">団体</span>
+      <span class="tag-tab" onclick="switchTab(2)">技法</span>
+    </div>
+  </div>
+  <div class="tags-area"><div class="tags-cloud" id="tags-cloud"></div></div>
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="動画を検索..." oninput="renderGrid()">
+    <span class="search-count" id="search-count"></span>
+  </div>
+  <div id="filter-banner" class="filter-banner" style="display:none">
+    <span id="filter-label"></span>
+    <button onclick="clearFilters()">× 解除</button>
+  </div>
+  <div class="pagination-wrap" id="pagination-top"></div>
+  <div class="video-grid" id="video-grid"></div>
+  <div class="pagination-wrap" id="pagination-bottom" style="background:#eef3e4;padding:14px 24px 20px;"></div>
+</div>
+
+<!-- PLAYER PAGE -->
+<div id="player-page" class="page">
+  <div class="player-video-wrap">
+    <iframe id="yt-player" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+  </div>
+  <div class="player-info">
+    <h2 class="player-title" id="player-title-text"></h2>
+    <div class="player-tags" id="player-tags"></div>
+    <div class="player-actions">
+      <button class="action-btn" id="like-btn" onclick="toggleLike()">
+        <span>♥</span><span id="like-label">いいね</span><span id="like-count" style="font-size:12px;color:#aaa;margin-left:2px"></span>
+      </button>
+      <button class="action-btn" id="save-btn" onclick="toggleSave()">
+        <span>🕐</span><span id="save-label">後で見る</span>
+      </button>
+      <button class="btn-back" onclick="showPage('club')">← 戻る</button>
+    </div>
+  </div>
+  <div class="comments-section">
+    <div class="comments-title">コメント <span id="comment-count-label" style="font-weight:400;color:#888;font-size:14px">0件</span></div>
+    <div class="comment-form">
+      <div class="comment-avatar" id="comment-avatar-self">Me</div>
+      <div class="comment-input-wrap">
+        <textarea class="comment-textarea" id="comment-input" placeholder="コメントを追加..." rows="1"
+          oninput="autoResize(this);updateCommentBtn()"
+          onfocus="document.getElementById('comment-form-btns').style.display='flex'"></textarea>
+        <div class="comment-form-btns" id="comment-form-btns" style="display:none">
+          <button class="btn-comment-cancel" onclick="cancelComment()">キャンセル</button>
+          <button class="btn-comment-post" id="post-comment-btn" onclick="postComment()" disabled>コメントする</button>
+        </div>
+      </div>
+    </div>
+    <div class="comment-list" id="comment-list"></div>
+  </div>
+</div>
+
+<!-- MYPAGE -->
+<div id="mypage-page" class="page">
+  <div class="mypage-header">
+    <h1 class="mypage-title">マイページ</h1>
+  </div>
+  <div class="mypage-section">
+    <div class="mypage-section-title">♥ いいねした動画 <span id="liked-count" style="font-weight:400;font-size:13px;color:#aaa"></span></div>
+    <div class="mypage-grid" id="liked-grid"></div>
+  </div>
+  <div class="mypage-section">
+    <div class="mypage-section-title">🕐 後で見る <span id="saved-count" style="font-weight:400;font-size:13px;color:#aaa"></span></div>
+    <div class="mypage-grid" id="saved-grid"></div>
+  </div>
+</div>
+
+<!-- MEMBER PAGE -->
+<div id="member-page" class="page">
+  <div class="member-container">
+    <div class="member-page-title">♣ 会員設定</div>
+
+    <!-- アバター選択 -->
+    <div class="member-avatar-section">
+      <div class="member-section-label">コメントアイコン</div>
+      <div class="avatar-current">
+        <div class="avatar-preview" id="avatar-preview-big" style="background:#9acd32;color:#1a2a00">😀</div>
+        <div>
+          <div class="avatar-name" id="avatar-display-name">あなた</div>
+          <div class="avatar-sub">コメント欄に表示されるアイコン</div>
+        </div>
+      </div>
+
+      <!-- 絵文字アイコン選択 -->
+      <div style="font-size:12px;color:#888;margin-bottom:8px;font-weight:700">絵文字から選ぶ</div>
+      <div class="avatar-grid" id="avatar-emoji-grid"></div>
+
+      <!-- イニシャル＋色設定 -->
+      <div style="font-size:12px;color:#888;margin-top:12px;margin-bottom:8px;font-weight:700">またはイニシャルで設定</div>
+      <div class="avatar-initial-wrap">
+        <input type="text" class="avatar-initial-input" id="avatar-initial-input" maxlength="3" placeholder="例: MC" oninput="onInitialInput(this.value)">
+        <div class="avatar-color-row" id="avatar-color-row"></div>
+      </div>
+    </div>
+
+    <!-- アカウント設定 -->
+    <div class="member-settings-section">
+      <div class="member-section-label" style="margin-bottom:20px">アカウント設定</div>
+
+      <div class="settings-field">
+        <label>メールアドレス</label>
+        <div class="settings-field-row">
+          <input type="email" class="settings-input" id="settings-email" value="user@example.com" disabled>
+          <button class="btn-settings-edit" onclick="toggleEditField('email')">変更</button>
+        </div>
+        <div class="settings-hint" id="settings-email-hint" style="display:none">新しいメールアドレスを入力してください</div>
+      </div>
+
+      <div class="settings-field">
+        <label>パスワード</label>
+        <div class="settings-field-row">
+          <input type="password" class="settings-input" id="settings-password" value="••••••••" disabled>
+          <button class="btn-settings-edit" onclick="toggleEditField('password')">変更</button>
+        </div>
+        <div id="settings-password-new-wrap" style="display:none;margin-top:8px">
+          <div class="settings-field-row">
+            <input type="password" class="settings-input" id="settings-password-confirm" placeholder="新しいパスワード（確認）">
+          </div>
+          <div class="settings-hint">8文字以上で設定してください</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="member-save-bar">
+      <button class="btn-member-save" onclick="saveMemberSettings()">変更を保存</button>
+      <button class="btn-cancel-post" onclick="showPage('club')">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST PAGE -->
+<div id="post-page" class="page">
+  <div class="post-container">
+    <div id="no-perm-view" class="no-perm" style="display:none">
+      <div style="font-size:44px;margin-bottom:16px">🔐</div>
+      <h2 style="font-size:17px;color:#555;margin-bottom:8px">投稿権限がありません</h2>
+      <p style="font-size:14px">管理者から投稿権限を付与してもらう必要があります。</p>
+    </div>
+    <div id="post-form-view">
+      <div class="post-header">
+        <span style="font-size:20px">🎬</span>
+        <h1>動画を投稿する</h1>
+      </div>
+      <div class="post-body">
+        <div class="post-field">
+          <label>YouTube リンク <span class="required">※必須</span></label>
+          <input type="url" id="post-url" placeholder="https://www.youtube.com/watch?v=... または限定公開URL" oninput="onUrlInput(this.value)">
+          <div class="hint">通常URL・短縮URL（youtu.be）・限定公開URLのいずれも使用できます</div>
+          <div class="unlisted-note" id="unlisted-note">🔒 <strong>限定公開動画</strong>として登録します。会員のみ再生できます。</div>
+          <div class="yt-preview" id="yt-preview">
+            <img id="preview-thumb" src="" alt="">
+            <div>
+              <div id="preview-title" style="font-size:13px;font-weight:500;color:#222"></div>
+              <div class="yt-preview-ok">✓ YouTube動画IDを認識しました</div>
+            </div>
+          </div>
+        </div>
+        <div class="post-field">
+          <label>タグ <span class="required">※必須</span></label>
+          <div class="tag-input-wrap" onclick="document.getElementById('tag-text-input').focus()">
+            <div id="tag-chips"></div>
+            <input type="text" class="tag-text-input" id="tag-text-input"
+              placeholder="タグを入力して , または Enter で追加"
+              oninput="onTagInput(this.value)" onkeydown="onTagKeydown(event)">
+          </div>
+          <div class="hint">カンマ（,）または Enter で区切って複数追加できます</div>
+        </div>
+        <div class="post-field">
+          <label>タイトル <span class="optional">（任意）</span></label>
+          <input type="text" id="post-title" placeholder="省略するとYouTubeの動画タイトルが使われます">
+        </div>
+        <div class="post-field">
+          <label>投稿者名 <span class="optional">（任意）</span></label>
+          <input type="text" id="post-author" placeholder="省略するとYouTubeのチャンネル名が使われます">
+        </div>
+        <div class="post-submit-area">
+          <button class="btn-submit" id="submit-btn" onclick="submitVideo()" disabled>投稿する</button>
+          <button class="btn-cancel-post" onclick="showPage('club')">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== TAG TAXONOMY =====
+// TAB_TAGS[0]=演目, [1]=団体, [2]=技法
+const TAB_TAGS = [
+  ['2026','2025','2024','畢宿祭','学祭','スポンジ','カード','メンタル',
+   '演目/扇子','演目/カード','演目/ハト','演目/ウォンド','演目/マスク','演目/シンブル',
+   '演目/コイン','演目/リング','演目/ロープ','演目/シルク','演目/メンタル','演目/メリケン',
+   '司会','クロースアップ','オープニング'],
+  ['国際信州大学'],
+  ['パーム','アニバーサリーワルツ','スプレッド','フォールスカット']
+];
+
+// サムネイル代替カラー（動画ごとの識別色）
+const THUMB_COLORS = [
+  '#1a3a5c','#2d1a5c','#1a4a2a','#4a1a1a','#1a3a4a',
+  '#3a2a1a','#1a2a4a','#3a1a3a','#1a4a3a','#4a3a1a',
+  '#2a1a4a','#1a4a1a','#4a2a1a','#1a2a3a','#3a1a1a',
+  '#1a3a3a','#2a3a1a','#3a1a4a','#1a1a3a','#4a1a3a',
+  '#2a4a1a','#1a4a4a','#3a3a1a','#4a1a2a','#1a2a2a',
+  '#2a1a3a','#3a4a1a',
+];
+
+// ===== VIDEOS =====
+let VIDEOS = [
+  { id:'v001', title:'2026 畢宿祭 1-1 扇子「銀の旋律」田島 葵 (アオイ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/扇子','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[0] },
+  { id:'v002', title:'2026 畢宿祭 1-2 カード「Shadow Play」木村 蒼汰 (ソウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[1] },
+  { id:'v003', title:'2026 畢宿祭 1-3 ハト「白夜」中川 莉奈 (リナ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ハト','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[2] },
+  { id:'v004', title:'2026 畢宿祭 1-4 ウォンド「Starfall」岡本 隼 (ハヤテ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ウォンド','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[3] },
+  { id:'v005', title:'2026 畢宿祭 1-5 マスク「Veil of Night」石川 朱莉 (ジュリ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/マスク','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[4] },
+  { id:'v006', title:'2026 畢宿祭 1-6 シンブル「Ripple」藤田 悠斗 (ユウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/シンブル','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[5] },
+  { id:'v007', title:'2026 畢宿祭 司会1-1 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[6] },
+  { id:'v008', title:'2026 畢宿祭 司会1-2 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[7] },
+  { id:'v009', title:'2026 畢宿祭 司会1-3 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[8] },
+  { id:'v010', title:'2026 畢宿祭 2-1 コイン「Coin Storm」村上 拓真 (タク)', date:'2026/05/16', tags:['2026','畢宿祭','演目/コイン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[9] },
+  { id:'v011', title:'2026 畢宿祭 2-2 リング「Eternal Loop」佐野 美緒 (ミオ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/リング','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[10] },
+  { id:'v012', title:'2026 畢宿祭 2-3 カード「Midnight」近藤 颯 (ソラ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[11] },
+  { id:'v013', title:'2025 学祭 A-1 ロープ「Knot Theory」西山 陸 (リク)', date:'2025/11/03', tags:['2025','学祭','演目/ロープ','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[12] },
+  { id:'v014', title:'2025 学祭 A-2 カード「Infinite」松岡 彩 (アヤ)', date:'2025/11/03', tags:['2025','学祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[13] },
+  { id:'v015', title:'2025 学祭 A-3 コイン「Lunar」大野 聖也 (セイ)', date:'2025/11/03', tags:['2025','学祭','演目/コイン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[14] },
+  { id:'v016', title:'2025 学祭 B-1 シルク「Aurora」三浦 凪 (ナギ)', date:'2025/11/03', tags:['2025','学祭','演目/シルク','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[15] },
+  { id:'v017', title:'2025 学祭 B-2 メンタル「Echo」橋本 詩音 (シオン)', date:'2025/11/03', tags:['2025','学祭','演目/メンタル','メンタル','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[16] },
+  { id:'v028', title:'2025 畢宿祭 1-1 メリケン「猫愛」野村 葵', date:'2025/05/18', tags:['2025','畢宿祭','演目/メリケン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:'#2a1a4a' },
+  { id:'v018', title:'2025 畢宿祭 1-1 扇子「春の夢」上田 結菜 (ユナ)', date:'2025/05/18', tags:['2025','畢宿祭','演目/扇子','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[17] },
+  { id:'v019', title:'2025 畢宿祭 1-2 カード「Phantom」小島 律 (リツ)', date:'2025/05/18', tags:['2025','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[18] },
+  { id:'v020', title:'2025 畢宿祭 1-3 コイン「Solstice」川口 蓮 (レン)', date:'2025/05/18', tags:['2025','畢宿祭','演目/コイン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[19] },
+  { id:'v021', title:'2024 畢宿祭 1-1 リング「Orbit」長谷川 凌 (リョウ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/リング','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[20] },
+  { id:'v022', title:'2024 畢宿祭 1-2 カード「Dusk」永田 莉子 (リコ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[21] },
+  { id:'v023', title:'2024 畢宿祭 1-3 ウォンド「Spark」吉川 翔太 (ショウ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/ウォンド','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[22] },
+  { id:'v024', title:'2024 学祭 全体 Opening パフォーマンス', date:'2024/11/02', tags:['2024','学祭','オープニング','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[23] },
+  { id:'v025', title:'2026 畢宿祭 クロースアップ 早川 湊 (ミナト)', date:'2026/05/16', tags:['2026','畢宿祭','クロースアップ','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[24] },
+  { id:'v026', title:'2026 畢宿祭 クロースアップ 宮本 栞 (シオリ)', date:'2026/05/16', tags:['2026','畢宿祭','クロースアップ','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[25] },
+  { id:'v027', title:'2025 畢宿祭 司会 伊藤 南海 (ナミ)', date:'2025/05/18', tags:['2025','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[26] },
+];
+
+// ===== STATE & LOCALSTORAGE =====
+const LS_META_KEY = 'mc_videoMeta';
+const LS_PROFILE_KEY = 'mc_userProfile';
+
+// localStorageからvideoMetaを読み込む
+function loadMeta() {
+  try {
+    const raw = localStorage.getItem(LS_META_KEY);
+    if(raw) videoMeta = JSON.parse(raw);
+  } catch(e) { videoMeta = {}; }
+}
+// videoMetaをlocalStorageに保存
+function saveMeta() {
+  try { localStorage.setItem(LS_META_KEY, JSON.stringify(videoMeta)); } catch(e) {}
+}
+
+let videoMeta = {};
+function getMeta(id) {
+  if(!videoMeta[id]) {
+    videoMeta[id] = { likes: Math.floor(Math.random()*20)+1, liked:false, saved:false, comments:[] };
+    saveMeta();
+  }
+  return videoMeta[id];
+}
+
+const PAGE_SIZE = 9;
+let currentPage = 1;
+let selectedTags = [];
+let loggedIn = false;
+let canPost = true;
+let currentTab = 0;
+let currentVideoId = null;
+
+// ===== AUTH =====
+// ⚠️ デモ用認証。本番公開前にSupabase等のバックエンド認証に必ず移行すること
+const _AUTH = { e: 'a2VkZWt1cm9Ac2lrYTMuY29t', p: 'Zjl5M2s0azExY1pvOEt5' };
+function _chk(e, p) {
+  try { return atob(_AUTH.e) === e && atob(_AUTH.p) === p; } catch(e) { return false; }
+}
+const LS_CRED_KEY = 'mc_savedCred';
+
+function doLogin() {
+  const email = (document.getElementById('login-email').value || '').trim();
+  const pass = document.getElementById('login-pass').value || '';
+  const remember = document.getElementById('remember-me').checked;
+  const errEl = document.getElementById('login-error');
+  if(_chk(email, pass)) {
+    // 保存チェックがONなら資格情報をlocalStorageに保存
+    if(remember) {
+      try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass) })); } catch(e) {}
+    } else {
+      try { localStorage.removeItem(LS_CRED_KEY); } catch(e) {}
+    }
+    errEl.style.display = 'none';
+    loggedIn = true;
+    document.getElementById('nav-auth').style.display = 'flex';
+    document.getElementById('nav-guest').style.display = 'none';
+    closeDrawer();
+    showPage('club');
+  } else {
+    errEl.style.display = 'block';
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+// 保存済み資格情報をログインフォームに復元
+function restoreSavedCred() {
+  try {
+    const raw = localStorage.getItem(LS_CRED_KEY);
+    if(!raw) return;
+    const saved = JSON.parse(raw);
+    if(saved.e) document.getElementById('login-email').value = atob(saved.e);
+    if(saved.p) document.getElementById('login-pass').value = atob(saved.p);
+    document.getElementById('remember-me').checked = true;
+  } catch(e) {}
+}
+function logout() {
+  loggedIn = false;
+  document.getElementById('nav-auth').style.display = 'none';
+  document.getElementById('nav-guest').style.display = 'flex';
+  closeDrawer();
+  showPage('login');
+}
+function toggleDrawer() {
+  const btn = document.getElementById('hamburger-btn');
+  const overlay = document.getElementById('drawer-overlay');
+  const drawerAuth = document.getElementById('nav-drawer-auth');
+  const drawerGuest = document.getElementById('nav-drawer-guest');
+  const isOpen = btn.classList.contains('open');
+  if(isOpen) {
+    closeDrawer();
+  } else {
+    btn.classList.add('open');
+    overlay.classList.add('open');
+    if(loggedIn) { drawerAuth.classList.add('open'); drawerGuest.classList.remove('open'); }
+    else { drawerGuest.classList.add('open'); drawerAuth.classList.remove('open'); }
+  }
+}
+function closeDrawer() {
+  document.getElementById('hamburger-btn').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('nav-drawer-auth').classList.remove('open');
+  document.getElementById('nav-drawer-guest').classList.remove('open');
+}
+
+// ===== NAVIGATION (see showPage defined in MEMBER PAGE section above) =====
+
+// ===== TABS & TAGS =====
+function switchTab(idx) {
+  currentTab = idx;
+  document.querySelectorAll('.tag-tab').forEach((el,i) => el.classList.toggle('active', i===idx));
+  renderTags();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderTags() {
+  const counts = {};
+  VIDEOS.forEach(v => v.tags.forEach(t => { counts[t] = (counts[t]||0)+1; }));
+  const tabList = TAB_TAGS[currentTab];
+  const cloud = document.getElementById('tags-cloud');
+  const pills = tabList.map(tag => {
+    const count = counts[tag] || 0;
+    const sel = selectedTags.includes(tag) ? 'selected' : '';
+    const cntStr = count > 0 ? `<span class="count">${count}</span>` : '<span class="count" style="opacity:.4">0</span>';
+    return `<span class="tag-pill ${sel}" onclick="toggleTag('${escHtml(tag)}')" style="${count===0?'opacity:.5':''}">
+      ${escHtml(tag)} ${cntStr} <span class="plus">+</span></span>`;
+  });
+  cloud.innerHTML = pills.join('');
+}
+
+function toggleTag(tag) {
+  const idx = selectedTags.indexOf(tag);
+  if(idx>=0) selectedTags.splice(idx,1); else selectedTags.push(tag);
+  currentPage = 1;
+  renderTags();
+  renderGrid();
+  updateFilterBanner();
+}
+function clearFilters() {
+  selectedTags = [];
+  document.getElementById('search-input').value = '';
+  currentPage = 1;
+  renderTags(); renderGrid(); updateFilterBanner();
+}
+function updateFilterBanner() {
+  const banner = document.getElementById('filter-banner');
+  if(selectedTags.length > 0) {
+    banner.style.display = 'flex';
+    document.getElementById('filter-label').textContent = 'フィルター中: ' + selectedTags.join(' / ');
+  } else banner.style.display = 'none';
+}
+
+// ===== GRID =====
+function getFiltered() {
+  const q = (document.getElementById('search-input')||{value:''}).value.toLowerCase();
+  return VIDEOS.filter(v => {
+    const matchTags = selectedTags.length === 0 || selectedTags.every(t => v.tags.includes(t));
+    const matchSearch = !q || v.title.toLowerCase().includes(q) || v.tags.some(t=>t.toLowerCase().includes(q));
+    return matchTags && matchSearch;
+  });
+}
+function renderGrid() {
+  const filtered = getFiltered();
+  const totalPages = Math.max(1, Math.ceil(filtered.length/PAGE_SIZE));
+  if(currentPage > totalPages) currentPage = 1;
+  const start = (currentPage-1)*PAGE_SIZE;
+  const pageVideos = filtered.slice(start, start+PAGE_SIZE);
+  document.getElementById('search-count').textContent = `${filtered.length} 件`;
+  const grid = document.getElementById('video-grid');
+  if(pageVideos.length === 0) {
+    grid.innerHTML = '<div class="no-results">該当する動画がありません</div>';
+  } else {
+    grid.innerHTML = pageVideos.map(videoCard).join('');
+  }
+  renderPagination(totalPages);
+}
+function makeThumbHtml(v, w, h) {
+  // YouTubeサムネイルが取得できない場合はカラー背景＋タイトル表示
+  const color = v.thumbColor || '#1a2535';
+  const encTitle = escHtml(v.title);
+  // 短いタイトルラベル（演目名部分を抽出）
+  const shortLabel = v.title.replace(/^\d{4}\s*(畢宿祭|学祭)\s*[\w\-]+\s*/, '').slice(0, 20);
+  const svgThumb = `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>
+      <rect width='${w}' height='${h}' fill='${color}'/>
+      <rect x='0' y='${h*0.55}' width='${w}' height='${h*0.45}' fill='rgba(0,0,0,0.55)'/>
+      <text x='${w/2}' y='${h*0.38}' text-anchor='middle' dominant-baseline='middle' fill='rgba(154,205,50,0.6)' font-size='${h*0.18}' font-family='sans-serif'>▶</text>
+      <text x='8' y='${h*0.72}' fill='white' font-size='${h*0.11}' font-family='sans-serif' font-weight='bold'>${shortLabel.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</text>
+    </svg>`
+  )}`;
+  if(v.unlisted) {
+    return `data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'>
+        <rect width='${w}' height='${h}' fill='${color}'/>
+        <text x='${w/2}' y='${h*0.4}' text-anchor='middle' fill='#9acd32' font-size='${h*0.22}'>🔒</text>
+        <text x='${w/2}' y='${h*0.7}' text-anchor='middle' fill='#aaa' font-size='${h*0.11}' font-family='sans-serif'>限定公開</text>
+      </svg>`
+    )}`;
+  }
+  return `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+}
+
+function videoCard(v) {
+  const tagsHtml = v.tags.map(t =>
+    `<span class="video-tag" onclick="event.stopPropagation();toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`
+  ).join('');
+  const color = v.thumbColor || '#1a2535';
+  const shortLabel = v.title.replace(/^\d{4}\s*(畢宿祭|学祭)\s*[\w\-]+\s*/, '').slice(0, 22);
+  const thumbSrc = `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+  return `<div class="video-card" onclick="playVideo('${v.id}')">
+    <div class="video-thumb" style="position:relative;background:${color}">
+      <img src="${thumbSrc}" alt="${escHtml(v.title)}"
+        style="width:100%;height:100%;object-fit:cover;display:block"
+        onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+      <div class="thumb-fallback" style="display:none;position:absolute;inset:0;background:${color};flex-direction:column;justify-content:flex-end;">
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+          <div style="width:36px;height:36px;background:rgba(154,205,50,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+            <span style="color:rgba(154,205,50,0.85);font-size:14px;margin-left:2px">▶</span>
+          </div>
+        </div>
+        <div style="background:rgba(0,0,0,0.55);padding:5px 8px;">
+          <div style="color:#fff;font-size:10px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(shortLabel)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="video-info">
+      <div class="video-title">${escHtml(v.title)}</div>
+      <div class="video-date">${v.date}</div>
+      <div class="video-tags">${tagsHtml}</div>
+    </div>
+  </div>`;
+}
+function renderPagination(total) {
+  const html = buildPagination(total);
+  document.getElementById('pagination-top').innerHTML = html;
+  document.getElementById('pagination-bottom').innerHTML = html;
+}
+function buildPagination(total) {
+  if(total<=1) return '';
+  let pages = [];
+  const cur = currentPage;
+  pages.push(`<span class="page-btn" onclick="goPage(${Math.max(1,cur-1)})">&lt;</span>`);
+  let nums = new Set([1,total,cur-1,cur,cur+1].filter(n=>n>=1&&n<=total));
+  let sorted = [...nums].sort((a,b)=>a-b);
+  let prev=0;
+  sorted.forEach(n=>{
+    if(prev && n-prev>1) pages.push(`<span class="page-ellipsis">...</span>`);
+    pages.push(`<span class="page-btn ${n===cur?'active':''}" onclick="goPage(${n})">${n}</span>`);
+    prev=n;
+  });
+  pages.push(`<span class="page-btn" onclick="goPage(${Math.min(total,cur+1)})">&gt;</span>`);
+  return pages.join('');
+}
+function goPage(n) { currentPage=n; renderGrid(); window.scrollTo(0,0); }
+
+// ===== PLAYER =====
+function playVideo(id) {
+  if(!loggedIn) { showPage('login'); return; }
+  const v = VIDEOS.find(x=>x.id===id);
+  if(!v) return;
+  currentVideoId = id;
+  document.getElementById('player-title-text').textContent = v.title;
+  document.getElementById('yt-player').src = `https://www.youtube.com/embed/${v.yt}?autoplay=1`;
+  document.getElementById('player-tags').innerHTML = v.tags.map(t=>
+    `<span class="player-tag" onclick="showPage('club');toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`
+  ).join('');
+  renderPlayerMeta(id);
+  renderComments(id);
+  showPage('player');
+}
+function renderPlayerMeta(id) {
+  const m = getMeta(id);
+  document.getElementById('like-btn').classList.toggle('liked', m.liked);
+  document.getElementById('like-label').textContent = m.liked ? 'いいね済み' : 'いいね';
+  document.getElementById('like-count').textContent = m.likes > 0 ? m.likes : '';
+  document.getElementById('save-btn').classList.toggle('saved', m.saved);
+  document.getElementById('save-label').textContent = m.saved ? '保存済み' : '後で見る';
+}
+function toggleLike() {
+  if(!currentVideoId) return;
+  const m = getMeta(currentVideoId);
+  m.liked = !m.liked;
+  m.likes += m.liked ? 1 : -1;
+  saveMeta();
+  renderPlayerMeta(currentVideoId);
+}
+function toggleSave() {
+  if(!currentVideoId) return;
+  const m = getMeta(currentVideoId);
+  m.saved = !m.saved;
+  saveMeta();
+  renderPlayerMeta(currentVideoId);
+  showToast(m.saved ? '🕐 後で見るに追加しました' : '後で見るから削除しました');
+}
+
+// ===== COMMENTS =====
+function renderComments(id) {
+  const m = getMeta(id);
+  document.getElementById('comment-count-label').textContent = m.comments.length + '件';
+  document.getElementById('comment-input').value = '';
+  document.getElementById('comment-form-btns').style.display = 'none';
+  document.getElementById('post-comment-btn').disabled = true;
+  // コメント入力欄のアバターを最新に更新
+  const myAv = document.getElementById('comment-avatar-self');
+  if(myAv) { myAv.style.cssText = 'width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;' + getAvatarHtml(); myAv.textContent = getAvatarContent(); }
+  const list = document.getElementById('comment-list');
+  if(m.comments.length === 0) {
+    list.innerHTML = '<div style="color:#aaa;font-size:14px;padding:4px 0">まだコメントはありません</div>';
+    return;
+  }
+  list.innerHTML = m.comments.map((c,i) => {
+    const avStyle = c.avatarStyle || `background:${c.color||'#9acd32'};color:#1a2a00;font-size:12px`;
+    const avContent = c.avatarContent || c.avatar || 'Me';
+    return `
+    <div class="comment-item">
+      <div style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;${avStyle}">${avContent}</div>
+      <div class="comment-body">
+        <div class="comment-meta">
+          <span class="comment-name">${escHtml(c.name)}</span>
+          <span class="comment-date">${c.date}</span>
+        </div>
+        <div class="comment-text">${escHtml(c.text)}</div>
+        <button class="comment-like-btn ${c.liked?'liked':''}" onclick="likeComment('${id}',${i})">♥ ${c.likes>0?c.likes:''}</button>
+      </div>
+    </div>`}).join('');
+}
+function likeComment(videoId, idx) {
+  const m = getMeta(videoId);
+  const c = m.comments[idx];
+  c.liked = !c.liked;
+  c.likes = (c.likes||0) + (c.liked?1:-1);
+  saveMeta();
+  renderComments(videoId);
+}
+function autoResize(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+function updateCommentBtn() {
+  document.getElementById('post-comment-btn').disabled = !document.getElementById('comment-input').value.trim();
+}
+function cancelComment() {
+  document.getElementById('comment-input').value = '';
+  document.getElementById('comment-form-btns').style.display = 'none';
+  document.getElementById('post-comment-btn').disabled = true;
+}
+function postComment() {
+  if(!currentVideoId) return;
+  const input = document.getElementById('comment-input');
+  const text = input.value.trim();
+  if(!text) return;
+  const m = getMeta(currentVideoId);
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')}`;
+  m.comments.unshift({
+    name: userProfile.type==='initial' ? userProfile.initial : 'あなた',
+    avatarStyle: getAvatarHtml(),
+    avatarContent: getAvatarContent(),
+    color: userProfile.color,
+    date: dateStr, text, likes:0, liked:false
+  });
+  saveMeta();
+  renderComments(currentVideoId);
+  showToast('💬 コメントを投稿しました');
+}
+
+// ===== MYPAGE =====
+function renderMypage() {
+  const likedVideos = VIDEOS.filter(v => videoMeta[v.id] && videoMeta[v.id].liked);
+  const savedVideos = VIDEOS.filter(v => videoMeta[v.id] && videoMeta[v.id].saved);
+  document.getElementById('liked-count').textContent = likedVideos.length + '件';
+  document.getElementById('saved-count').textContent = savedVideos.length + '件';
+  document.getElementById('liked-grid').innerHTML = likedVideos.length
+    ? likedVideos.map(mypageCard).join('')
+    : '<div class="mypage-empty">まだいいねした動画はありません</div>';
+  document.getElementById('saved-grid').innerHTML = savedVideos.length
+    ? savedVideos.map(mypageCard).join('')
+    : '<div class="mypage-empty">まだ後で見るに追加した動画はありません</div>';
+}
+function mypageCard(v) {
+  const thumb = v.unlisted
+    ? `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='180'><rect width='320' height='180' fill='%230d1520'/><text x='160' y='90' text-anchor='middle' fill='%239acd32' font-size='30'>🔒</text></svg>`
+    : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+  return `<div class="mypage-card" onclick="playVideo('${v.id}')">
+    <div class="mypage-thumb"><img src="${thumb}" alt="${escHtml(v.title)}" onerror="this.style.display='none'"></div>
+    <div class="mypage-info"><div class="mypage-card-title">${escHtml(v.title)}</div></div>
+  </div>`;
+}
+
+// ===== POST PAGE =====
+let postTags = [], parsedYtId = '', urlDebounce = null;
+function initPostPage() {
+  if(!canPost) {
+    document.getElementById('no-perm-view').style.display = 'block';
+    document.getElementById('post-form-view').style.display = 'none';
+    return;
+  }
+  document.getElementById('no-perm-view').style.display = 'none';
+  document.getElementById('post-form-view').style.display = 'block';
+  ['post-url','post-title','post-author','tag-text-input'].forEach(id => document.getElementById(id).value = '');
+  postTags = []; parsedYtId = '';
+  renderTagChips(); hidePreview(); validateSubmit();
+  document.getElementById('unlisted-note').classList.remove('visible');
+}
+function extractYtId(url) {
+  url = url.trim();
+  let m;
+  m = url.match(/[?&]v=([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  m = url.match(/youtu\.be\/([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  m = url.match(/embed\/([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  m = url.match(/shorts\/([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  if(/^[A-Za-z0-9_-]{11}$/.test(url)) return url;
+  return null;
+}
+function isUnlisted(url) { return url.includes('list=') || url.includes('?pp='); }
+function onUrlInput(val) {
+  clearTimeout(urlDebounce);
+  urlDebounce = setTimeout(() => {
+    const ytId = extractYtId(val);
+    if(ytId) {
+      parsedYtId = ytId;
+      const ul = isUnlisted(val);
+      showPreview(ytId, ul);
+      document.getElementById('unlisted-note').classList.toggle('visible', ul);
+    } else {
+      parsedYtId = ''; hidePreview();
+      document.getElementById('unlisted-note').classList.remove('visible');
+    }
+    validateSubmit();
+  }, 400);
+}
+function showPreview(ytId, unlisted) {
+  const thumb = unlisted
+    ? `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='88' height='50'><rect width='88' height='50' fill='%230d1520'/><text x='44' y='30' text-anchor='middle' fill='%239acd32' font-size='18'>🔒</text></svg>`
+    : `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
+  document.getElementById('preview-thumb').src = thumb;
+  document.getElementById('preview-title').textContent = 'ID: ' + ytId + (unlisted ? '（限定公開）' : '');
+  document.getElementById('yt-preview').classList.add('visible');
+}
+function hidePreview() { document.getElementById('yt-preview').classList.remove('visible'); }
+function onTagInput(val) {
+  if(val.includes(',') || val.includes('，')) {
+    val.split(/[,，]/).slice(0,-1).forEach(p => addTag(p.trim()));
+    document.getElementById('tag-text-input').value = val.split(/[,，]/).pop();
+  }
+  validateSubmit();
+}
+function onTagKeydown(e) {
+  const input = document.getElementById('tag-text-input');
+  if(e.key==='Enter'||e.key===',') {
+    e.preventDefault();
+    const val = input.value.trim();
+    if(val) { addTag(val); input.value=''; }
+  } else if(e.key==='Backspace' && input.value==='' && postTags.length>0) {
+    postTags.pop(); renderTagChips(); validateSubmit();
+  }
+}
+function addTag(tag) {
+  tag = tag.replace(/[,，]/g,'').trim();
+  if(!tag || postTags.includes(tag)) return;
+  postTags.push(tag); renderTagChips(); validateSubmit();
+}
+function removeTag(idx) { postTags.splice(idx,1); renderTagChips(); validateSubmit(); }
+function renderTagChips() {
+  document.getElementById('tag-chips').innerHTML = postTags.map((t,i) =>
+    `<span class="tag-chip">${escHtml(t)}<button class="remove-tag" onclick="removeTag(${i})">×</button></span>`
+  ).join('');
+}
+function validateSubmit() {
+  document.getElementById('submit-btn').disabled = !(parsedYtId && postTags.length>0);
+}
+function submitVideo() {
+  const ytId = parsedYtId;
+  if(!ytId || postTags.length===0) return;
+  const titleInput = document.getElementById('post-title').value.trim();
+  const authorInput = document.getElementById('post-author').value.trim();
+  const urlVal = document.getElementById('post-url').value;
+  const unlisted = isUnlisted(urlVal);
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
+  const title = titleInput || ('YouTube動画 ' + ytId + (authorInput?' / '+authorInput:''));
+  VIDEOS.unshift({ id:'v'+String(VIDEOS.length+1).padStart(3,'0'), title, date:dateStr, tags:[...postTags], yt:ytId, unlisted, author:authorInput||null });
+  showToast('✓ 動画を投稿しました！');
+  setTimeout(()=>showPage('club'), 1200);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// ===== MEMBER PAGE =====
+const EMOJI_OPTIONS = ['😀','😎','🧙','🎩','🃏','🌟','🍀','🦋','🐱','🐸','🦊','🐼','🦁','🐯','🎭','🎪','✨','🔮','🎯','🎲','🃏','🤹','🦄','👾'];
+const AVATAR_COLORS = ['#9acd32','#e04040','#3080e0','#e09030','#9040c0','#20a080','#e06090','#607080'];
+let userProfile = {
+  type: 'emoji', // 'emoji' or 'initial'
+  emoji: '😀',
+  initial: '',
+  color: '#9acd32',
+  name: 'あなた'
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(name+'-page').classList.add('active');
+  if(name === 'club') { renderGrid(); renderTags(); }
+  if(name === 'post') { initPostPage(); }
+  if(name === 'mypage') { renderMypage(); }
+  if(name === 'member') { initMemberPage(); }
+  if(name !== 'player') document.getElementById('yt-player').src = '';
+  window.scrollTo(0,0);
+}
+
+function initMemberPage() {
+  // 絵文字グリッド
+  const grid = document.getElementById('avatar-emoji-grid');
+  grid.innerHTML = EMOJI_OPTIONS.map(e =>
+    `<div class="avatar-opt ${userProfile.type==='emoji'&&userProfile.emoji===e?'selected':''}"
+      style="background:#f0f0f0;font-size:22px"
+      onclick="selectEmoji('${e}')">${e}</div>`
+  ).join('');
+
+  // カラーパレット
+  const colorRow = document.getElementById('avatar-color-row');
+  colorRow.innerHTML = AVATAR_COLORS.map(c =>
+    `<div class="avatar-color-opt ${userProfile.color===c?'selected':''}"
+      style="background:${c}"
+      onclick="selectAvatarColor('${c}')"></div>`
+  ).join('');
+
+  // イニシャル入力
+  document.getElementById('avatar-initial-input').value = userProfile.type==='initial' ? userProfile.initial : '';
+
+  updateAvatarPreview();
+}
+
+function selectEmoji(e) {
+  userProfile.type = 'emoji';
+  userProfile.emoji = e;
+  document.querySelectorAll('.avatar-opt').forEach(el => el.classList.remove('selected'));
+  event.target.classList.add('selected');
+  document.getElementById('avatar-initial-input').value = '';
+  updateAvatarPreview();
+}
+
+function onInitialInput(val) {
+  if(val.trim()) {
+    userProfile.type = 'initial';
+    userProfile.initial = val.trim().toUpperCase().slice(0,3);
+    document.querySelectorAll('.avatar-opt').forEach(el => el.classList.remove('selected'));
+  } else if(!val) {
+    userProfile.type = 'emoji';
+  }
+  updateAvatarPreview();
+}
+
+function selectAvatarColor(c) {
+  userProfile.color = c;
+  document.querySelectorAll('.avatar-color-opt').forEach(el => el.classList.remove('selected'));
+  event.target.classList.add('selected');
+  updateAvatarPreview();
+}
+
+function updateAvatarPreview() {
+  const prev = document.getElementById('avatar-preview-big');
+  if(!prev) return;
+  prev.style.background = userProfile.type==='emoji' ? '#f0f0f0' : userProfile.color;
+  if(userProfile.type === 'emoji') {
+    prev.textContent = userProfile.emoji;
+    prev.classList.remove('text-mode');
+    prev.style.color = '#111';
+  } else {
+    prev.textContent = userProfile.initial || '?';
+    prev.classList.add('text-mode');
+    prev.style.color = '#fff';
+  }
+}
+
+function toggleEditField(field) {
+  if(field === 'email') {
+    const input = document.getElementById('settings-email');
+    const hint = document.getElementById('settings-email-hint');
+    const isDisabled = input.disabled;
+    input.disabled = !isDisabled;
+    hint.style.display = isDisabled ? 'block' : 'none';
+    if(!isDisabled) { input.value = 'user@example.com'; }
+    else { input.focus(); input.select(); }
+  } else if(field === 'password') {
+    const input = document.getElementById('settings-password');
+    const newWrap = document.getElementById('settings-password-new-wrap');
+    const isDisabled = input.disabled;
+    input.disabled = !isDisabled;
+    newWrap.style.display = isDisabled ? 'none' : 'block';
+    if(!isDisabled) {
+      input.type = 'password';
+      input.value = '';
+      input.placeholder = '新しいパスワード';
+      input.focus();
+    } else {
+      input.value = '••••••••';
+      input.placeholder = '';
+    }
+  }
+}
+
+function saveMemberSettings() {
+  // アバター保存
+  if(document.getElementById('avatar-initial-input').value.trim()) {
+    userProfile.initial = document.getElementById('avatar-initial-input').value.trim().toUpperCase().slice(0,3);
+    userProfile.type = 'initial';
+  }
+  showToast('✓ 設定を保存しました');
+  setTimeout(() => showPage('club'), 1000);
+}
+
+function getAvatarHtml() {
+  const bg = userProfile.type==='emoji' ? '#f0f0f0' : userProfile.color;
+  const content = userProfile.type==='emoji' ? userProfile.emoji : (userProfile.initial||'Me');
+  const textColor = userProfile.type==='emoji' ? '#111' : '#fff';
+  const fontSize = userProfile.type==='emoji' ? '16px' : '12px';
+  return `background:${bg};color:${textColor};font-size:${fontSize}`;
+}
+function getAvatarContent() {
+  return userProfile.type==='emoji' ? userProfile.emoji : (userProfile.initial||'Me');
+}
+
+// ===== RANKING =====
+function toggleRanking() {
+  const panel = document.getElementById('ranking-panel');
+  const overlay = document.getElementById('ranking-overlay');
+  if(panel.classList.contains('open')) {
+    closeRanking();
+  } else {
+    renderRanking();
+    panel.classList.add('open');
+    overlay.classList.add('open');
+  }
+}
+function closeRanking() {
+  const panel = document.getElementById('ranking-panel');
+  const overlay = document.getElementById('ranking-overlay');
+  panel.classList.remove('open');
+  overlay.classList.remove('open');
+  panel.style.display = '';
+  overlay.style.display = '';
+}
+function renderRanking() {
+  const ranked = [...VIDEOS]
+    .map(v => ({ v, likes: getMeta(v.id).likes }))
+    .sort((a, b) => b.likes - a.likes)
+    .slice(0, 10);
+
+  const rankClasses = ['top1','top2','top3'];
+  document.getElementById('ranking-list').innerHTML = ranked.map(({v, likes}, i) => {
+    const color = v.thumbColor || '#1a2535';
+    const shortLabel = v.title.replace(/^\d{4}\s*(畢宿祭|学祭)\s*[\w\-]+\s*/, '').slice(0, 16);
+    const thumbSrc = `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+    const rankClass = i < 3 ? rankClasses[i] : '';
+    return `<button class="ranking-item" onclick="playVideoFromRanking('${v.id}')">
+      <span class="ranking-rank ${rankClass}">${i+1}</span>
+      <div style="width:72px;height:40px;flex-shrink:0;border-radius:4px;overflow:hidden;background:${color};position:relative;">
+        <img src="${thumbSrc}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"
+          onerror="this.style.display='none';this.nextSibling.style.display='flex'">
+        <div style="display:none;position:absolute;inset:0;background:${color};flex-direction:column;justify-content:flex-end;align-items:stretch;">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+            <span style="color:rgba(154,205,50,0.7);font-size:12px">▶</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.5);padding:2px 4px;">
+            <div style="color:#fff;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px">${escHtml(shortLabel)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="ranking-info">
+        <div class="ranking-title">${escHtml(v.title)}</div>
+        <div class="ranking-likes">♥ ${likes}</div>
+      </div>
+    </button>`;
+  }).join('');
+}
+function playVideoFromRanking(id) {
+  // まずパネルとオーバーレイを完全に非表示にする
+  const panel = document.getElementById('ranking-panel');
+  const overlay = document.getElementById('ranking-overlay');
+  panel.style.display = 'none';
+  overlay.style.display = 'none';
+  panel.classList.remove('open');
+  overlay.classList.remove('open');
+  // 直接 playVideo を呼ぶ（遅延なし）
+  playVideo(id);
+}
+
+// ===== INIT =====
+// localStorageからデータ復元
+loadMeta();
+restoreSavedCred();
+// 未ログイン状態でスタート
+document.getElementById('login-page').classList.add('active');
+renderTags();
+renderGrid();
+</script>
+</body>
+</html>
