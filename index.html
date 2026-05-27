@@ -1269,20 +1269,60 @@ nav {
     return null; // 失敗 or データなし → ローカルのデフォルト動画を使う
   };
 
-  // ---------- 初期化トリガー ----------
-  // Firebase が準備できてからアプリを起動する
-  window._fbLoadVideos().then(saved => {
-    if (saved) {
-      // 古い猫SVGサムネを削除（data:image/svg+xml で猫が入っているものをクリア）
-      saved.forEach(v => {
-        if (v.customThumb && v.customThumb.includes('svg')) {
-          delete v.customThumb;
-        }
-      });
-      window.VIDEOS = saved;
+  // ---------- videoMeta を Firestore に保存 ----------
+  window._fbSaveMeta = async function(meta) {
+    try {
+      await setDoc(doc(db, "mc_data", "meta"), { data: meta });
+    } catch(e) {
+      console.error("[Firebase] saveMeta エラー:", e);
     }
-    // ローカルのフォールバック（localStorage）も確認
-    if (!saved) {
+  };
+
+  // ---------- videoMeta を Firestore から読み込む ----------
+  window._fbLoadMeta = async function() {
+    try {
+      const snap = await getDoc(doc(db, "mc_data", "meta"));
+      if (snap.exists()) return snap.data().data || {};
+    } catch(e) {
+      console.error("[Firebase] loadMeta エラー:", e);
+    }
+    return null;
+  };
+
+  // ---------- タグマスターを Firestore に保存 ----------
+  window._fbSaveTabTags = async function(tags) {
+    try {
+      await setDoc(doc(db, "mc_data", "tabTags"), { data: tags });
+    } catch(e) {
+      console.error("[Firebase] saveTabTags エラー:", e);
+    }
+  };
+
+  // ---------- タグマスターを Firestore から読み込む ----------
+  window._fbLoadTabTags = async function() {
+    try {
+      const snap = await getDoc(doc(db, "mc_data", "tabTags"));
+      if (snap.exists()) return snap.data().data || null;
+    } catch(e) {
+      console.error("[Firebase] loadTabTags エラー:", e);
+    }
+    return null;
+  };
+
+  // ---------- 初期化トリガー ----------
+  // videos / meta / tabTags を並列ロードしてから起動する
+  Promise.all([
+    window._fbLoadVideos(),
+    window._fbLoadMeta(),
+    window._fbLoadTabTags(),
+  ]).then(([savedVideos, savedMeta, savedTabTags]) => {
+    // 動画データ
+    if (savedVideos) {
+      savedVideos.forEach(v => {
+        if (v.customThumb && v.customThumb.includes('svg')) delete v.customThumb;
+      });
+      window.VIDEOS = savedVideos;
+    } else {
       try {
         const raw = localStorage.getItem('mc_videos');
         if (raw) {
@@ -1291,7 +1331,14 @@ nav {
         }
       } catch(e) {}
     }
-    // DOM が読み込み済みなら即実行、そうでなければ待つ
+    // いいね・コメント・保存メタ
+    if (savedMeta && typeof savedMeta === 'object') {
+      window._fbInitMeta = savedMeta;
+    }
+    // タグマスター
+    if (savedTabTags && Array.isArray(savedTabTags)) {
+      window._fbInitTabTags = savedTabTags;
+    }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', window._appInit);
     } else {
@@ -1416,23 +1463,26 @@ var VIDEOS = [
 const LS_META_KEY = 'mc_videoMeta';
 const LS_PROFILE_KEY = 'mc_userProfile';
 
-// localStorageからvideoMetaを読み込む（いいね数はリセット）
+// videoMetaをFirestore（+localStorageバックアップ）から読み込む
 function loadMeta() {
   try {
-    const raw = localStorage.getItem(LS_META_KEY);
-    if(raw) {
-      videoMeta = JSON.parse(raw);
-      // いいね数を0にリセット（かさ増し対策）
-      Object.keys(videoMeta).forEach(id => {
-        videoMeta[id].likes = 0;
-        videoMeta[id].liked = false;
-      });
-      saveMeta();
+    // Firebase ESMモジュールが先にロードしたデータがあれば使う
+    if (window._fbInitMeta && typeof window._fbInitMeta === 'object') {
+      videoMeta = window._fbInitMeta;
+      return;
     }
+    // フォールバック: localStorage
+    const raw = localStorage.getItem(LS_META_KEY);
+    if(raw) videoMeta = JSON.parse(raw);
   } catch(e) { videoMeta = {}; }
 }
-// videoMetaをlocalStorageに保存
+// videoMetaをFirestore + localStorageに保存
 function saveMeta() {
+  // Firestoreへ保存（非同期・エラーは握り潰す）
+  if (typeof window._fbSaveMeta === 'function') {
+    window._fbSaveMeta(videoMeta);
+  }
+  // localStorageにもバックアップ
   try { localStorage.setItem(LS_META_KEY, JSON.stringify(videoMeta)); } catch(e) {}
 }
 
@@ -1467,25 +1517,27 @@ function _chk(e, p) {
 }
 const LS_CRED_KEY = 'mc_savedCred';
 
+const SESSION_EXPIRE_MS = 60 * 60 * 1000; // 1時間
+
+function _applyLogin(email) {
+  loggedIn = true;
+  isAdmin = _ADMINS.some(a => { try { return atob(a) === email; } catch(e) { return false; } });
+  document.getElementById('nav-auth').style.display = 'flex';
+  document.getElementById('nav-guest').style.display = 'none';
+  document.getElementById('admin-bar').classList.toggle('visible', isAdmin);
+}
+
 function doLogin() {
   const email = (document.getElementById('login-email').value || '').trim();
   const pass = document.getElementById('login-pass').value || '';
   const remember = document.getElementById('remember-me').checked;
   const errEl = document.getElementById('login-error');
   if(_chk(email, pass)) {
-    if(remember) {
-      try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass) })); } catch(e) {}
-    } else {
-      try { localStorage.removeItem(LS_CRED_KEY); } catch(e) {}
-    }
+    // セッション情報を保存（remember=trueなら期限なし、falseなら1時間）
+    const expiry = remember ? null : Date.now() + SESSION_EXPIRE_MS;
+    try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass), expiry, remember })); } catch(e) {}
     errEl.style.display = 'none';
-    loggedIn = true;
-    // 管理者判定
-    isAdmin = _ADMINS.some(a => { try { return atob(a) === email; } catch(e) { return false; } });
-    document.getElementById('nav-auth').style.display = 'flex';
-    document.getElementById('nav-guest').style.display = 'none';
-    // 管理者バー表示切替
-    document.getElementById('admin-bar').classList.toggle('visible', isAdmin);
+    _applyLogin(email);
     closeDrawer();
     showPage('club');
   } else {
@@ -1495,20 +1547,38 @@ function doLogin() {
   }
 }
 
-// 保存済み資格情報をログインフォームに復元
-function restoreSavedCred() {
+// 保存済みセッションで自動ログイン（1時間以内 or remember=true）
+// 戻り値: true=自動ログイン成功, false=ログイン画面を表示
+function tryAutoLogin() {
   try {
     const raw = localStorage.getItem(LS_CRED_KEY);
-    if(!raw) return;
+    if(!raw) return false;
     const saved = JSON.parse(raw);
-    if(saved.e) document.getElementById('login-email').value = atob(saved.e);
-    if(saved.p) document.getElementById('login-pass').value = atob(saved.p);
-    document.getElementById('remember-me').checked = true;
+    if(!saved.e || !saved.p) return false;
+    const email = atob(saved.e), pass = atob(saved.p);
+    // 期限チェック: remember=trueなら無期限, それ以外は expiry を確認
+    if(!saved.remember && saved.expiry && Date.now() > saved.expiry) {
+      localStorage.removeItem(LS_CRED_KEY);
+      return false;
+    }
+    // 資格情報が正しければ自動ログイン
+    if(_chk(email, pass)) {
+      // セッション期限を更新（remember=falseなら毎回リセット）
+      if(!saved.remember) {
+        saved.expiry = Date.now() + SESSION_EXPIRE_MS;
+        try { localStorage.setItem(LS_CRED_KEY, JSON.stringify(saved)); } catch(e) {}
+      }
+      _applyLogin(email);
+      return true;
+    }
   } catch(e) {}
+  return false;
 }
 function logout() {
   loggedIn = false;
   isAdmin = false;
+  // セッションを完全削除
+  try { localStorage.removeItem(LS_CRED_KEY); } catch(e) {}
   document.getElementById('admin-bar').classList.remove('visible');
   document.getElementById('nav-auth').style.display = 'none';
   document.getElementById('nav-guest').style.display = 'flex';
@@ -2074,16 +2144,28 @@ function addTagFromSection(si) {
 const LS_TAB_TAGS_KEY = 'mc_tabTags';
 function loadTabTags() {
   try {
+    // Firebase ESMモジュールが先にロードしたデータがあれば使う
+    if (window._fbInitTabTags && Array.isArray(window._fbInitTabTags)) {
+      const saved = window._fbInitTabTags;
+      for(let i = 0; i < 4; i++) { if(saved[i]) TAB_TAGS[i] = saved[i]; }
+      return;
+    }
+    // フォールバック: localStorage
     const raw = localStorage.getItem(LS_TAB_TAGS_KEY);
     if(raw) {
       const saved = JSON.parse(raw);
-      if(Array.isArray(saved) && saved.length === 3) {
-        TAB_TAGS[0] = saved[0]; TAB_TAGS[1] = saved[1]; TAB_TAGS[2] = saved[2]; if(saved[3]) TAB_TAGS[3] = saved[3];
+      if(Array.isArray(saved)) {
+        for(let i = 0; i < 4; i++) { if(saved[i]) TAB_TAGS[i] = saved[i]; }
       }
     }
   } catch(e) {}
 }
 function saveTabTags() {
+  // Firestoreへ保存
+  if (typeof window._fbSaveTabTags === 'function') {
+    window._fbSaveTabTags(TAB_TAGS);
+  }
+  // localStorageにもバックアップ
   try { localStorage.setItem(LS_TAB_TAGS_KEY, JSON.stringify(TAB_TAGS)); } catch(e) {}
 }
 function openTagMasterModal() {
@@ -2177,13 +2259,14 @@ function showToast(msg) {
 // ===== MEMBER PAGE =====
 const EMOJI_OPTIONS = ['😀','😎','🧙','🎩','🃏','🌟','🍀','🦋','🐱','🐸','🦊','🐼','🦁','🐯','🎭','🎪','✨','🔮','🎯','🎲','🃏','🤹','🦄','👾'];
 const AVATAR_COLORS = ['#9acd32','#e04040','#3080e0','#e09030','#9040c0','#20a080','#e06090','#607080'];
-let userProfile = {
-  type: 'emoji', // 'emoji' or 'initial'
-  emoji: '😀',
-  initial: '',
-  color: '#9acd32',
-  name: 'あなた'
-};
+let userProfile = (() => {
+  const defaults = { type: 'emoji', emoji: '😀', initial: '', color: '#9acd32', name: 'あなた' };
+  try {
+    const raw = localStorage.getItem('mc_userProfile');
+    if(raw) return Object.assign(defaults, JSON.parse(raw));
+  } catch(e) {}
+  return defaults;
+})();
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2294,10 +2377,22 @@ function toggleEditField(field) {
 }
 
 function saveMemberSettings() {
-  // アバター保存
-  if(document.getElementById('avatar-initial-input').value.trim()) {
-    userProfile.initial = document.getElementById('avatar-initial-input').value.trim().toUpperCase().slice(0,3);
+  // イニシャル入力があればイニシャルモード、なければ絵文字モード
+  const initialVal = document.getElementById('avatar-initial-input').value.trim();
+  if(initialVal) {
     userProfile.type = 'initial';
+    userProfile.initial = initialVal.toUpperCase().slice(0,3);
+  } else {
+    // 絵文字グリッドで選択されているものを反映（selectEmoji が既にuserProfileを更新済み）
+    if(userProfile.type !== 'initial') userProfile.type = 'emoji';
+  }
+  // localStorageに永続化
+  try { localStorage.setItem('mc_userProfile', JSON.stringify(userProfile)); } catch(e) {}
+  // コメント入力欄のアバターを即反映
+  const myAv = document.getElementById('comment-avatar-self');
+  if(myAv) {
+    myAv.style.cssText = 'width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;' + getAvatarHtml();
+    myAv.textContent = getAvatarContent();
   }
   showToast('✓ 設定を保存しました');
   setTimeout(() => showPage('club'), 1000);
@@ -2563,12 +2658,16 @@ window._appInit = function() {
   if (_appInitDone) return;
   _appInitDone = true;
   loadMeta();
-  loadTabTags(); // 管理者がカスタマイズしたタグマスターを読み込む
-  loadVideos(); // Firebase版では何もしない（既に上書き済み）
-  restoreSavedCred();
-  document.getElementById('login-page').classList.add('active');
+  loadTabTags();
+  loadVideos();
   renderTags();
   renderGrid();
+  // セッションが有効なら club へ、なければ login へ
+  if(tryAutoLogin()) {
+    showPage('club');
+  } else {
+    document.getElementById('login-page').classList.add('active');
+  }
 };
 
 // Firebase が設定されていない場合や読み込み失敗時のフォールバック
