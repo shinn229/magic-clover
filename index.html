@@ -783,6 +783,17 @@ nav {
 /* 削除確認モーダル */
 .modal-btn-del { background: #c02020; color: #fff; border: none; border-radius: 6px; padding: 9px 22px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .modal-warn { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 20px; }
+/* 投稿フォーム プリセットタグボタン */
+.post-tag-preset {
+  display: inline-flex; align-items: center;
+  background: #f0f0f0; color: #444;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px; border-radius: 4px;
+  cursor: pointer; user-select: none;
+  transition: background 0.12s, color 0.12s;
+  border: 1px solid #ddd;
+}
+.post-tag-preset:hover { background: var(--tag-bg); color: var(--tag-text); border-color: #c07800; }
 </style>
 </head>
 <body>
@@ -1046,14 +1057,46 @@ nav {
           </div>
         </div>
         <div class="post-field">
+          <label>サムネイル画像 <span class="optional">（任意）</span></label>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <label style="display:inline-flex;align-items:center;gap:6px;background:#f0f0f0;border:1px solid #ccc;border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;color:#444">
+              🖼️ 画像を選択
+              <input type="file" id="post-thumb-file" accept="image/*" style="display:none" onchange="onThumbFileChange(event)">
+            </label>
+            <img id="post-thumb-preview" src="" alt="" style="display:none;width:96px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #ddd">
+            <button id="post-thumb-clear" style="display:none;background:none;border:1px solid #ccc;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;color:#888" onclick="clearThumb()">× 削除</button>
+          </div>
+          <div class="hint">選択しない場合はYouTubeのサムネイルが自動表示されます</div>
+        </div>
+        <div class="post-field">
           <label>タグ <span class="required">※必須</span></label>
-          <div class="tag-input-wrap" onclick="document.getElementById('tag-text-input').focus()">
-            <div id="tag-chips"></div>
+          <div id="tag-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
+
+          <div style="margin-bottom:8px">
+            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🎭 演目</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${TAB_TAGS[0].map(t=>`<span class="post-tag-preset" onclick="addTag('${t}')">${t}</span>`).join('')}
+            </div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🏫 団体</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${TAB_TAGS[1].map(t=>`<span class="post-tag-preset" onclick="addTag('${t}')">${t}</span>`).join('')}
+            </div>
+          </div>
+          <div style="margin-bottom:10px">
+            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🤹 技法</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${TAB_TAGS[2].map(t=>`<span class="post-tag-preset" onclick="addTag('${t}')">${t}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="tag-input-wrap" onclick="document.getElementById('tag-text-input').focus()" style="margin-top:4px">
             <input type="text" class="tag-text-input" id="tag-text-input"
-              placeholder="タグを入力して , または Enter で追加"
+              placeholder="上のボタン以外のタグは直接入力 → Enter"
               oninput="onTagInput(this.value)" onkeydown="onTagKeydown(event)">
           </div>
-          <div class="hint">カンマ（,）または Enter で区切って複数追加できます</div>
+          <div class="hint">セクションのボタンをクリックするか、直接入力できます</div>
         </div>
         <div class="post-field">
           <label>タイトル <span class="optional">（任意）</span></label>
@@ -1320,11 +1363,19 @@ var VIDEOS = [
 const LS_META_KEY = 'mc_videoMeta';
 const LS_PROFILE_KEY = 'mc_userProfile';
 
-// localStorageからvideoMetaを読み込む
+// localStorageからvideoMetaを読み込む（いいね数はリセット）
 function loadMeta() {
   try {
     const raw = localStorage.getItem(LS_META_KEY);
-    if(raw) videoMeta = JSON.parse(raw);
+    if(raw) {
+      videoMeta = JSON.parse(raw);
+      // いいね数を0にリセット（かさ増し対策）
+      Object.keys(videoMeta).forEach(id => {
+        if(videoMeta[id].likes > 0 && !videoMeta[id].liked) {
+          videoMeta[id].likes = 0;
+        }
+      });
+    }
   } catch(e) { videoMeta = {}; }
 }
 // videoMetaをlocalStorageに保存
@@ -1335,7 +1386,7 @@ function saveMeta() {
 let videoMeta = {};
 function getMeta(id) {
   if(!videoMeta[id]) {
-    videoMeta[id] = { likes: Math.floor(Math.random()*20)+1, liked:false, saved:false, comments:[] };
+    videoMeta[id] = { likes: 0, liked:false, saved:false, comments:[] };
     saveMeta();
   }
   return videoMeta[id];
@@ -1536,19 +1587,22 @@ function videoCard(v) {
   const tagsHtml = v.tags.map(t =>
     `<span class="video-tag" onclick="event.stopPropagation();toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`
   ).join('');
-  const catIdx = parseInt(v.id.replace(/\D/g,''), 10) - 1;
-  const catThumb = CAT_THUMBS[((catIdx % CAT_THUMBS.length) + CAT_THUMBS.length) % CAT_THUMBS.length];
-  const ytThumb = `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
   const adminBtns = isAdmin ? `
     <div class="video-card-admin visible" onclick="event.stopPropagation()">
       <button class="admin-card-btn edit" onclick="openEditModalById('${v.id}')">✏️</button>
       <button class="admin-card-btn delete" onclick="openDeleteModalById('${v.id}')">🗑️</button>
     </div>` : '';
-  // src に猫SVGを直接セット。YouTubeサムネイルは別途fetch試行
+  // カスタムサムネがあればそれを、なければYouTubeサムネ、限定公開はロックアイコン
+  const thumbSrc = v.customThumb
+    ? v.customThumb
+    : v.unlisted
+      ? `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='180'><rect width='320' height='180' fill='%230d1520'/><text x='160' y='90' text-anchor='middle' fill='%239acd32' font-size='30'>🔒</text></svg>`
+      : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
   return `<div class="video-card" onclick="playVideo('${v.id}')" style="position:relative">
     <div class="video-thumb" style="position:relative;background:#1a2535">
-      <img id="thumb-${v.id}" src="${catThumb}" alt="${escHtml(v.title)}"
-        style="width:100%;height:100%;object-fit:cover;display:block">
+      <img id="thumb-${v.id}" src="${thumbSrc}" alt="${escHtml(v.title)}"
+        style="width:100%;height:100%;object-fit:cover;display:block"
+        onerror="this.src='https://img.youtube.com/vi/${v.yt}/mqdefault.jpg'">
       ${adminBtns}
     </div>
     <div class="video-info">
@@ -1718,7 +1772,7 @@ function mypageCard(v) {
 }
 
 // ===== POST PAGE =====
-let postTags = [], parsedYtId = '', urlDebounce = null;
+let postTags = [], parsedYtId = '', urlDebounce = null, postCustomThumb = null;
 function initPostPage() {
   if(!canPost) {
     document.getElementById('no-perm-view').style.display = 'block';
@@ -1728,9 +1782,33 @@ function initPostPage() {
   document.getElementById('no-perm-view').style.display = 'none';
   document.getElementById('post-form-view').style.display = 'block';
   ['post-url','post-title','post-author','tag-text-input'].forEach(id => document.getElementById(id).value = '');
-  postTags = []; parsedYtId = '';
+  postTags = []; parsedYtId = ''; postCustomThumb = null;
   renderTagChips(); hidePreview(); validateSubmit();
   document.getElementById('unlisted-note').classList.remove('visible');
+  // サムネリセット
+  document.getElementById('post-thumb-file').value = '';
+  document.getElementById('post-thumb-preview').style.display = 'none';
+  document.getElementById('post-thumb-preview').src = '';
+  document.getElementById('post-thumb-clear').style.display = 'none';
+}
+function onThumbFileChange(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    postCustomThumb = ev.target.result; // base64
+    document.getElementById('post-thumb-preview').src = postCustomThumb;
+    document.getElementById('post-thumb-preview').style.display = 'block';
+    document.getElementById('post-thumb-clear').style.display = 'inline-flex';
+  };
+  reader.readAsDataURL(file);
+}
+function clearThumb() {
+  postCustomThumb = null;
+  document.getElementById('post-thumb-file').value = '';
+  document.getElementById('post-thumb-preview').style.display = 'none';
+  document.getElementById('post-thumb-preview').src = '';
+  document.getElementById('post-thumb-clear').style.display = 'none';
 }
 function extractYtId(url) {
   url = url.trim();
@@ -1809,7 +1887,9 @@ function submitVideo() {
   const today = new Date();
   const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
   const title = titleInput || ('YouTube動画 ' + ytId + (authorInput?' / '+authorInput:''));
-  VIDEOS.unshift({ id:'v'+String(VIDEOS.length+1).padStart(3,'0'), title, date:dateStr, tags:[...postTags], yt:ytId, unlisted, author:authorInput||null });
+  const newVideo = { id:'v'+String(VIDEOS.length+1).padStart(3,'0'), title, date:dateStr, tags:[...postTags], yt:ytId, unlisted, author:authorInput||null };
+  if(postCustomThumb) newVideo.customThumb = postCustomThumb;
+  VIDEOS.unshift(newVideo);
   saveVideos();
   showToast('✓ 動画を投稿しました！');
   setTimeout(()=>showPage('club'), 1200);
