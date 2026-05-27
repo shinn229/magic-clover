@@ -421,7 +421,7 @@ nav {
 /* ===== MYPAGE ===== */
 #mypage-page { background: #f5f7fa; min-height: calc(100vh - 64px); padding: 28px 24px; }
 .mypage-header { margin-bottom: 28px; }
-.mypage-title { font-size: 22px; font-weight: 700; color: #fff; }
+.mypage-title { font-size: 22px; font-weight: 700; color: #111; }
 .mypage-section { margin-bottom: 32px; }
 .mypage-section-title { font-size: 16px; font-weight: 700; color: var(--clover); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(154,205,50,0.3); }
 .mypage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -984,6 +984,47 @@ nav {
 .badge-approved { background: #fff8e0; color: #7a5200; border: 1px solid #d4a020; }
 .badge-rejected { background: #fff0f0; color: #c02020; border: 1px solid #f08080; }
 .badge-revoked  { background: #f0f0f0; color: #888;    border: 1px solid #ccc; }
+
+/* ===== PLAYLIST PAGE ===== */
+#playlist-page { background: #f5f7fa; min-height: calc(100vh - 64px); padding: 28px 20px; }
+.playlist-container { max-width: 860px; margin: 0 auto; }
+.playlist-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.playlist-page-title { font-size: 22px; font-weight: 700; color: #111; }
+.btn-new-playlist {
+  background: var(--clover); color: #1a2a00; border: none; border-radius: 6px;
+  padding: 9px 18px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.btn-new-playlist:hover { background: var(--clover-dark); }
+.playlist-card {
+  background: #fff; border-radius: 10px; padding: 16px 20px;
+  margin-bottom: 12px; display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.playlist-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); transform: translateY(-1px); }
+.playlist-card-icon { font-size: 28px; flex-shrink: 0; }
+.playlist-card-info { flex: 1; min-width: 0; }
+.playlist-card-name { font-size: 15px; font-weight: 700; color: #111; margin-bottom: 3px; }
+.playlist-card-count { font-size: 12px; color: #888; }
+.playlist-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-pl-add { background: #e8f5e0; color: #2a7020; border: 1px solid #8acc60; border-radius: 5px; padding: 5px 12px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-pl-add:hover { background: #c8eab0; }
+.btn-pl-del { background: #fff0f0; color: #c02020; border: 1px solid #f08080; border-radius: 5px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.btn-pl-del:hover { background: #ffe0e0; }
+#playlist-player-page { background: #fff; min-height: calc(100vh - 64px); }
+.playlist-player-container { max-width: 960px; margin: 0 auto; }
+.playlist-player-header { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #eee; background: #fff; }
+.pl-track-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+.pl-track-item:hover { background: #f5fae8; }
+.pl-track-item.active { background: #e8f5d0; }
+.pl-track-num { font-size: 12px; color: #aaa; width: 20px; text-align: center; flex-shrink: 0; }
+.pl-track-thumb { width: 60px; height: 34px; object-fit: cover; border-radius: 3px; flex-shrink: 0; background: #1a2535; }
+.pl-track-title { font-size: 12px; color: #111; line-height: 1.4; flex: 1; min-width: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pl-add-video-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+.pl-add-video-item:hover { background: #f5fae8; }
+.pl-add-video-item.in-list { background: #f0f7e0; }
+.pl-add-video-thumb { width: 72px; height: 40px; object-fit: cover; border-radius: 3px; flex-shrink: 0; background: #1a2535; }
+.playlist-empty { text-align: center; padding: 60px 20px; color: #aaa; font-size: 14px; }
 /* テーブルスクロール（スマホ） */
 #req-table-wrap, #member-table-wrap { overflow-x: auto; }
 @media (max-width: 600px) {
@@ -1003,6 +1044,7 @@ nav {
   <!-- PC: ログイン済みメニュー -->
   <div class="nav-right" id="nav-auth" style="display:none">
     <div class="nav-links">
+      <a onclick="showPage('playlist')">おすすめ</a>
       <a onclick="showPage('club')">動画</a>
       <a onclick="showPage('member')">会員</a>
       <a onclick="showPage('mypage')">マイページ</a>
@@ -1039,6 +1081,7 @@ nav {
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
 <!-- ドロワーメニュー（ログイン済み） -->
 <div class="nav-drawer" id="nav-drawer-auth">
+  <a onclick="closeDrawer();showPage('playlist')">おすすめ</a>
   <a onclick="closeDrawer();showPage('club')">動画</a>
   <a onclick="closeDrawer();showPage('member')">会員</a>
   <a onclick="closeDrawer();showPage('mypage')">マイページ</a>
@@ -1166,6 +1209,74 @@ nav {
   </div>
 </div>
 
+<!-- PLAYLIST PAGE -->
+<div id="playlist-page" class="page">
+  <div class="playlist-container">
+    <div class="playlist-header">
+      <h1 class="playlist-page-title">⭐ おすすめプレイリスト</h1>
+      <button class="btn-new-playlist" onclick="openNewPlaylistModal()">＋ 新規作成</button>
+    </div>
+    <div id="playlist-list-wrap"></div>
+  </div>
+</div>
+
+<!-- プレイリスト再生ページ -->
+<div id="playlist-player-page" class="page">
+  <div class="playlist-player-container">
+    <div class="playlist-player-header">
+      <button class="btn-back" onclick="showPage('playlist')" style="margin-right:12px">← 戻る</button>
+      <h2 id="playlist-player-title" style="font-size:16px;font-weight:700;color:#111;flex:1"></h2>
+    </div>
+    <div style="display:flex;gap:0;flex-wrap:wrap">
+      <!-- 動画プレイヤー -->
+      <div style="flex:1;min-width:280px">
+        <div style="background:#000;width:100%">
+          <iframe id="pl-yt-player" allowfullscreen allow="autoplay;encrypted-media;picture-in-picture" style="width:100%;aspect-ratio:16/9;display:block;border:none"></iframe>
+        </div>
+        <div style="padding:12px 16px;background:#fff;border-bottom:1px solid #eee">
+          <div id="pl-video-title" style="font-size:15px;font-weight:700;color:#111;margin-bottom:6px"></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button onclick="plPrev()" style="background:#f0f0f0;border:none;border-radius:6px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:inherit">◀ 前へ</button>
+            <button onclick="plNext()" style="background:var(--clover);color:#1a2a00;border:none;border-radius:6px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">次へ ▶</button>
+            <span id="pl-progress" style="font-size:12px;color:#888;margin-left:4px"></span>
+          </div>
+        </div>
+      </div>
+      <!-- 曲目リスト -->
+      <div id="pl-track-list" style="width:280px;min-width:220px;max-height:480px;overflow-y:auto;background:#f8f8f8;border-left:1px solid #eee"></div>
+    </div>
+  </div>
+</div>
+
+<!-- プレイリスト新規作成モーダル -->
+<div class="modal-overlay" id="modal-new-playlist">
+  <div class="modal-box" style="max-width:440px">
+    <h3>📋 プレイリストを作成</h3>
+    <div style="margin-bottom:14px">
+      <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:6px">プレイリスト名</label>
+      <input type="text" id="new-playlist-name" class="modal-input" placeholder="例：2026年 畢宿祭" maxlength="40">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-new-playlist')">キャンセル</button>
+      <button class="modal-btn-save" onclick="createPlaylist()">作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- プレイリスト動画追加モーダル -->
+<div class="modal-overlay" id="modal-add-to-playlist">
+  <div class="modal-box-wide" style="max-width:520px;max-height:80vh;overflow-y:auto">
+    <h3 style="margin-bottom:12px">🎬 動画を追加</h3>
+    <input type="text" id="pl-video-search" placeholder="動画を検索..."
+      oninput="renderAddVideoList()"
+      style="width:100%;border:1px solid #ccc;border-radius:6px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box">
+    <div id="pl-add-video-list" style="max-height:340px;overflow-y:auto;border:1px solid #eee;border-radius:6px"></div>
+    <div class="modal-btns" style="padding-top:12px">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-add-to-playlist')">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADMIN PAGE -->
 <div id="adminpage-page" class="page">
   <div class="adminpage-container">
@@ -1269,6 +1380,14 @@ nav {
   <div class="mypage-header">
     <h1 class="mypage-title">マイページ</h1>
   </div>
+  <!-- マイプレイリスト -->
+  <div class="mypage-section">
+    <div class="mypage-section-title" style="justify-content:space-between">
+      <span>📋 マイプレイリスト <span id="my-pl-count" style="font-weight:400;font-size:13px;color:#aaa"></span></span>
+      <button onclick="openMyNewPlaylistModal()" style="background:var(--clover);color:#1a2a00;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">＋ 新規作成</button>
+    </div>
+    <div id="my-playlist-grid"></div>
+  </div>
   <div class="mypage-section">
     <div class="mypage-section-title">♥ いいねした動画 <span id="liked-count" style="font-weight:400;font-size:13px;color:#aaa"></span></div>
     <div class="mypage-grid" id="liked-grid"></div>
@@ -1276,6 +1395,35 @@ nav {
   <div class="mypage-section">
     <div class="mypage-section-title">🕐 後で見る <span id="saved-count" style="font-weight:400;font-size:13px;color:#aaa"></span></div>
     <div class="mypage-grid" id="saved-grid"></div>
+  </div>
+</div>
+
+<!-- マイプレイリスト 新規作成モーダル -->
+<div class="modal-overlay" id="modal-my-new-playlist">
+  <div class="modal-box" style="max-width:440px">
+    <h3>📋 マイプレイリストを作成</h3>
+    <div style="margin-bottom:14px">
+      <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:6px">プレイリスト名</label>
+      <input type="text" id="my-new-playlist-name" class="modal-input" placeholder="例：お気に入りマジック" maxlength="40">
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-my-new-playlist')">キャンセル</button>
+      <button class="modal-btn-save" onclick="createMyPlaylist()">作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- マイプレイリスト 動画追加モーダル -->
+<div class="modal-overlay" id="modal-my-add-video">
+  <div class="modal-box-wide" style="max-width:520px;max-height:80vh;overflow-y:auto">
+    <h3 id="my-add-video-modal-title" style="margin-bottom:12px">🎬 動画を追加</h3>
+    <input type="text" id="my-pl-video-search" placeholder="動画を検索..."
+      oninput="renderMyAddVideoList()"
+      style="width:100%;border:1px solid #ccc;border-radius:6px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box">
+    <div id="my-pl-add-video-list" style="max-height:340px;overflow-y:auto;border:1px solid #eee;border-radius:6px"></div>
+    <div class="modal-btns" style="padding-top:12px">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-my-add-video')">閉じる</button>
+    </div>
   </div>
 </div>
 
@@ -1648,6 +1796,36 @@ nav {
     } catch(e) { return null; }
   };
 
+  // ---------- 共有プレイリスト保存・読み込み ----------
+  window._fbSaveSharedPlaylists = async function(sharedPls) {
+    try { await setDoc(doc(db, "mc_data", "sharedPlaylists"), { data: sharedPls }); }
+    catch(e) { console.error("[Firebase] saveSharedPlaylists エラー:", e); throw e; }
+  };
+  window._fbLoadSharedPlaylistsOnce = async function() {
+    try {
+      const snap = await getDoc(doc(db, "mc_data", "sharedPlaylists"));
+      return snap.exists() ? (snap.data().data || []) : [];
+    } catch(e) { return []; }
+  };
+
+  // ---------- リアルタイムリスナー: sharedPlaylists ----------
+  function startSharedPlaylistsListener() {
+    onSnapshot(doc(db, "mc_data", "sharedPlaylists"), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data().data;
+      if (!Array.isArray(data)) return;
+      window._fbSharedPlaylistsCache = data;
+      if (window._appInitDone) {
+        // おすすめページが開いていれば再描画
+        const plPage = document.getElementById('playlist-page');
+        if (plPage && plPage.classList.contains('active') && typeof renderPlaylistPage === 'function') renderPlaylistPage();
+        // マイページが開いていれば再描画
+        const myPage = document.getElementById('mypage-page');
+        if (myPage && myPage.classList.contains('active') && typeof renderMypage === 'function') renderMypage();
+      }
+    }, (e) => { console.error("[Firebase] sharedPlaylists リスナーエラー:", e); });
+  }
+
   // ---------- リアルタイムリスナー: users ----------
   function startUsersListener() {
     onSnapshot(doc(db, "mc_data", "users"), (snap) => {
@@ -1707,6 +1885,7 @@ nav {
     startMetaListener();
     startTabTagsListener();
     startUsersListener();
+    startSharedPlaylistsListener();
   });
 </script>
 
@@ -1829,27 +2008,48 @@ var VIDEOS = [
 // ===== STATE & LOCALSTORAGE =====
 const LS_META_KEY = 'mc_videoMeta';
 const LS_PROFILE_KEY = 'mc_userProfile';
+// いいね・後で見るはユーザーごとにlocalStorageで管理（キーにメアドを含める）
+function getUserMetaKey() {
+  return 'mc_userMeta_' + (currentUserEmail || '_guest');
+}
+function loadUserMeta() {
+  try {
+    const raw = localStorage.getItem(getUserMetaKey());
+    return raw ? JSON.parse(raw) : {};
+  } catch(e) { return {}; }
+}
+function saveUserMeta(data) {
+  try { localStorage.setItem(getUserMetaKey(), JSON.stringify(data)); } catch(e) {}
+}
 
 // videoMetaをFirestore（+localStorageバックアップ）から読み込む
+// ※ liked / saved はFirebaseに保存しない（ユーザーごとにローカル管理）
 function loadMeta() {
   try {
-    // Firebase ESMモジュールが先にロードしたデータがあれば使う
     if (window._fbInitMeta && typeof window._fbInitMeta === 'object') {
       videoMeta = window._fbInitMeta;
       return;
     }
-    // フォールバック: localStorage
     const raw = localStorage.getItem(LS_META_KEY);
     if(raw) videoMeta = JSON.parse(raw);
   } catch(e) { videoMeta = {}; }
 }
 // videoMetaをFirestore + localStorageに保存
+// liked / saved は除いて保存（それらはユーザーローカル管理）
 function saveMeta() {
-  // Firestoreへ保存（非同期・エラーは握り潰す）
-  if (typeof window._fbSaveMeta === 'function') {
-    window._fbSaveMeta(videoMeta);
+  // Firestore保存用: liked/saved/コメントのlikedを除いた共有データのみ
+  const forFirestore = {};
+  for(const id in videoMeta) {
+    const { liked, saved, ...shared } = videoMeta[id];
+    // コメントのlikedも除外
+    if(shared.comments) {
+      shared.comments = shared.comments.map(c => { const { liked: cl, ...cc } = c; return cc; });
+    }
+    forFirestore[id] = shared;
   }
-  // localStorageにもバックアップ
+  if (typeof window._fbSaveMeta === 'function') {
+    window._fbSaveMeta(forFirestore);
+  }
   try { localStorage.setItem(LS_META_KEY, JSON.stringify(videoMeta)); } catch(e) {}
 }
 
@@ -1857,8 +2057,11 @@ let videoMeta = {};
 function getMeta(id) {
   if(!videoMeta[id]) {
     videoMeta[id] = { likes: 0, liked:false, saved:false, comments:[] };
-    saveMeta();
   }
+  // liked / saved はユーザーローカルから上書き（Firebaseの値を使わない）
+  const userMeta = loadUserMeta();
+  videoMeta[id].liked = !!(userMeta[id] && userMeta[id].liked);
+  videoMeta[id].saved = !!(userMeta[id] && userMeta[id].saved);
   return videoMeta[id];
 }
 
@@ -2251,6 +2454,13 @@ function toggleLike() {
   const m = getMeta(currentVideoId);
   m.liked = !m.liked;
   m.likes += m.liked ? 1 : -1;
+  if(m.likes < 0) m.likes = 0;
+  // liked はユーザーローカルに保存
+  const userMeta = loadUserMeta();
+  if(!userMeta[currentVideoId]) userMeta[currentVideoId] = {};
+  userMeta[currentVideoId].liked = m.liked;
+  saveUserMeta(userMeta);
+  // likes数（共有）はFirebaseに保存
   saveMeta();
   renderPlayerMeta(currentVideoId);
 }
@@ -2258,7 +2468,11 @@ function toggleSave() {
   if(!currentVideoId) return;
   const m = getMeta(currentVideoId);
   m.saved = !m.saved;
-  saveMeta();
+  // saved はユーザーローカルに保存
+  const userMeta = loadUserMeta();
+  if(!userMeta[currentVideoId]) userMeta[currentVideoId] = {};
+  userMeta[currentVideoId].saved = m.saved;
+  saveUserMeta(userMeta);
   renderPlayerMeta(currentVideoId);
   showToast(m.saved ? '🕐 後で見るに追加しました' : '後で見るから削除しました');
 }
@@ -2333,8 +2547,10 @@ function postComment() {
 
 // ===== MYPAGE =====
 function renderMypage() {
-  const likedVideos = VIDEOS.filter(v => videoMeta[v.id] && videoMeta[v.id].liked);
-  const savedVideos = VIDEOS.filter(v => videoMeta[v.id] && videoMeta[v.id].saved);
+  renderMypagePlaylist();
+  const userMeta = loadUserMeta();
+  const likedVideos = VIDEOS.filter(v => userMeta[v.id] && userMeta[v.id].liked);
+  const savedVideos = VIDEOS.filter(v => userMeta[v.id] && userMeta[v.id].saved);
   document.getElementById('liked-count').textContent = likedVideos.length + '件';
   document.getElementById('saved-count').textContent = savedVideos.length + '件';
   document.getElementById('liked-grid').innerHTML = likedVideos.length
@@ -2681,6 +2897,360 @@ function submitVideo() {
   setTimeout(()=>showPage('club'), 1200);
 }
 
+// ===== PLAYLIST =====
+// ===== PLAYLIST（おすすめ・共有） =====
+// おすすめページ（ナビ「おすすめ」）：クロース権限者が共有したプレイリストをFirebaseから表示
+function renderPlaylistPage() {
+  const sharedPls = window._fbSharedPlaylistsCache || [];
+  const wrap = document.getElementById('playlist-list-wrap');
+  if(!wrap) return;
+  // 管理者は「＋ 新規作成」ボタンを表示
+  const titleHtml = document.querySelector('#playlist-page .playlist-header');
+  if(titleHtml) {
+    const btn = titleHtml.querySelector('.btn-new-playlist');
+    if(btn) btn.style.display = (isAdmin || canPost) ? '' : 'none';
+  }
+  if(sharedPls.length === 0) {
+    wrap.innerHTML = '<div class="playlist-empty">⭐ まだ共有プレイリストがありません</div>';
+    return;
+  }
+  wrap.innerHTML = sharedPls.map((pl, i) => `
+    <div class="playlist-card" onclick="openSharedPlaylist(${i})">
+      <div class="playlist-card-icon">⭐</div>
+      <div class="playlist-card-info">
+        <div class="playlist-card-name">${escHtml(pl.name)}</div>
+        <div class="playlist-card-count">${pl.videos.length} 本 ／ 作成: ${escHtml(pl.ownerName||'')}</div>
+      </div>
+      ${(isAdmin || (canPost && pl.ownerEmail === currentUserEmail)) ? `
+      <div class="playlist-card-actions" onclick="event.stopPropagation()">
+        <button class="btn-pl-del" onclick="deleteSharedPlaylist(${i})">🗑️</button>
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+async function deleteSharedPlaylist(i) {
+  const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
+  if(!confirm(`「${sharedPls[i].name}」を共有プレイリストから削除しますか？`)) return;
+  sharedPls.splice(i, 1);
+  window._fbSharedPlaylistsCache = sharedPls;
+  await window._fbSaveSharedPlaylists(sharedPls);
+  renderPlaylistPage();
+  showToast('共有プレイリストを削除しました');
+}
+
+function openSharedPlaylist(i) {
+  const pl = (window._fbSharedPlaylistsCache || [])[i];
+  if(!pl || pl.videos.length === 0) { showToast('動画がありません'); return; }
+  currentPlId = 'shared:' + i;
+  currentPlIndex = 0;
+  document.getElementById('playlist-player-title').textContent = pl.name;
+  renderPlTrackList(pl);
+  plPlayAt(0);
+  showPage('playlist-player');
+}
+
+// ===== マイプレイリスト（マイページ） =====
+const LS_MY_PLAYLISTS_KEY = 'mc_myPlaylists';
+let myPlaylists = [];
+let _myPlTargetIndex = -1;
+
+function loadMyPlaylists() {
+  try { const r = localStorage.getItem(LS_MY_PLAYLISTS_KEY + '_' + (currentUserEmail||'guest')); if(r) myPlaylists = JSON.parse(r); else myPlaylists = []; }
+  catch(e) { myPlaylists = []; }
+}
+function saveMyPlaylists() {
+  try { localStorage.setItem(LS_MY_PLAYLISTS_KEY + '_' + (currentUserEmail||'guest'), JSON.stringify(myPlaylists)); } catch(e) {}
+}
+
+function renderMypagePlaylist() {
+  loadMyPlaylists();
+  const grid = document.getElementById('my-playlist-grid');
+  const countEl = document.getElementById('my-pl-count');
+  if(!grid) return;
+  if(countEl) countEl.textContent = myPlaylists.length + '件';
+  if(myPlaylists.length === 0) {
+    grid.innerHTML = '<div class="mypage-empty">まだマイプレイリストはありません</div>';
+    return;
+  }
+  grid.innerHTML = myPlaylists.map((pl, i) => {
+    const firstVid = pl.videos.length > 0 ? VIDEOS.find(v => v.id === pl.videos[0]) : null;
+    const thumb = firstVid && !firstVid.unlisted ? `https://img.youtube.com/vi/${firstVid.yt}/mqdefault.jpg` : '';
+    const isShared = !!(window._fbSharedPlaylistsCache || []).find(sp => sp.id === pl.id);
+    return `<div class="mypage-card" style="position:relative" onclick="openMyPlaylist(${i})">
+      <div class="mypage-thumb" style="position:relative">
+        ${thumb ? `<img src="${thumb}" alt="" style="width:100%;height:100%;object-fit:cover">` : `<div style="width:100%;height:100%;background:#1a2535;display:flex;align-items:center;justify-content:center;font-size:28px">📋</div>`}
+        <div style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,0.7);color:#fff;font-size:11px;padding:2px 6px;border-radius:3px">${pl.videos.length}本</div>
+        ${isShared ? '<div style="position:absolute;top:4px;left:6px;background:#9acd32;color:#1a2a00;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px">共有中</div>' : ''}
+      </div>
+      <div class="mypage-info">
+        <div class="mypage-card-title" style="font-weight:700">${escHtml(pl.name)}</div>
+      </div>
+      <div style="display:flex;gap:4px;padding:0 8px 8px;flex-wrap:wrap" onclick="event.stopPropagation()">
+        <button onclick="openMyAddVideoModal(${i})" style="flex:1;background:#f0f0f0;border:none;border-radius:4px;padding:4px 0;font-size:11px;cursor:pointer;font-family:inherit">＋ 動画</button>
+        ${canPost ? `<button onclick="toggleShareMyPlaylist(${i})" style="flex:1;background:${isShared?'#e8f5e0':'#f0f0f0'};border:none;border-radius:4px;padding:4px 0;font-size:11px;cursor:pointer;font-family:inherit;color:${isShared?'#2a7020':'#555'}">${isShared?'✅共有中':'🌐 共有'}</button>` : ''}
+        <button onclick="deleteMyPlaylist(${i})" style="background:#fff0f0;border:none;border-radius:4px;padding:4px 6px;font-size:11px;cursor:pointer;color:#c02020">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openMyNewPlaylistModal() {
+  document.getElementById('my-new-playlist-name').value = '';
+  document.getElementById('modal-my-new-playlist').classList.add('open');
+  setTimeout(() => document.getElementById('my-new-playlist-name').focus(), 100);
+}
+function createMyPlaylist() {
+  const name = document.getElementById('my-new-playlist-name').value.trim();
+  if(!name) { showToast('名前を入力してください'); return; }
+  loadMyPlaylists();
+  const id = 'mpl_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+  myPlaylists.push({ id, name, videos: [], createdAt: new Date().toISOString() });
+  saveMyPlaylists();
+  closeModal('modal-my-new-playlist');
+  renderMypagePlaylist();
+  showToast('✅ プレイリストを作成しました');
+}
+function deleteMyPlaylist(i) {
+  loadMyPlaylists();
+  if(!confirm(`「${myPlaylists[i].name}」を削除しますか？`)) return;
+  // 共有中なら共有も解除
+  const pl = myPlaylists[i];
+  const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
+  const sharedIdx = sharedPls.findIndex(sp => sp.id === pl.id);
+  if(sharedIdx >= 0) {
+    sharedPls.splice(sharedIdx, 1);
+    window._fbSharedPlaylistsCache = sharedPls;
+    if(window._fbSaveSharedPlaylists) window._fbSaveSharedPlaylists(sharedPls);
+  }
+  myPlaylists.splice(i, 1);
+  saveMyPlaylists();
+  renderMypagePlaylist();
+  showToast('プレイリストを削除しました');
+}
+
+// 共有トグル（クロース権限者のみ）
+async function toggleShareMyPlaylist(i) {
+  if(!canPost) { showToast('クロース権限が必要です'); return; }
+  loadMyPlaylists();
+  const pl = myPlaylists[i];
+  const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
+  const sharedIdx = sharedPls.findIndex(sp => sp.id === pl.id);
+  if(sharedIdx >= 0) {
+    // 共有解除
+    sharedPls.splice(sharedIdx, 1);
+    showToast('共有を解除しました');
+  } else {
+    // 共有開始
+    const users = window._fbUsersCache || {};
+    const key = currentUserEmail.replace(/[.@]/g,'_');
+    const ownerName = (users[key] && users[key].name) || currentUserEmail;
+    sharedPls.push({
+      id: pl.id,
+      name: pl.name,
+      videos: pl.videos,
+      ownerEmail: currentUserEmail,
+      ownerName,
+      sharedAt: new Date().toISOString(),
+    });
+    showToast('✅ おすすめプレイリストに共有しました');
+  }
+  window._fbSharedPlaylistsCache = sharedPls;
+  await window._fbSaveSharedPlaylists(sharedPls);
+  renderMypagePlaylist();
+}
+
+// マイプレイリスト 動画追加
+function openMyAddVideoModal(plIdx) {
+  _myPlTargetIndex = plIdx;
+  loadMyPlaylists();
+  const pl = myPlaylists[plIdx];
+  document.getElementById('my-add-video-modal-title').textContent = `🎬 「${pl.name}」に動画を追加`;
+  document.getElementById('my-pl-video-search').value = '';
+  document.getElementById('modal-my-add-video').classList.add('open');
+  renderMyAddVideoList();
+}
+function renderMyAddVideoList() {
+  loadMyPlaylists();
+  const q = (document.getElementById('my-pl-video-search').value || '').toLowerCase();
+  const pl = myPlaylists[_myPlTargetIndex];
+  if(!pl) return;
+  const filtered = VIDEOS.filter(v => !q || v.title.toLowerCase().includes(q) || v.tags.some(t => t.toLowerCase().includes(q)));
+  const container = document.getElementById('my-pl-add-video-list');
+  if(filtered.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px">動画が見つかりません</div>'; return; }
+  container.innerHTML = filtered.map(v => {
+    const inList = pl.videos.includes(v.id);
+    const thumb = v.unlisted ? '' : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+    return `<div class="pl-add-video-item ${inList ? 'in-list' : ''}" onclick="toggleMyVideoInPlaylist('${v.id}')">
+      <img class="pl-add-video-thumb" src="${thumb}" alt="" onerror="this.style.display='none'">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:#111;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escHtml(v.title)}</div>
+      </div>
+      <span style="font-size:18px;flex-shrink:0">${inList ? '✅' : '➕'}</span>
+    </div>`;
+  }).join('');
+}
+function toggleMyVideoInPlaylist(videoId) {
+  loadMyPlaylists();
+  const pl = myPlaylists[_myPlTargetIndex];
+  if(!pl) return;
+  const idx = pl.videos.indexOf(videoId);
+  if(idx >= 0) { pl.videos.splice(idx, 1); showToast('削除しました'); }
+  else { pl.videos.push(videoId); showToast('✅ 追加しました'); }
+  saveMyPlaylists();
+  // 共有中なら Firebase 側も更新
+  const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
+  const sharedIdx = sharedPls.findIndex(sp => sp.id === pl.id);
+  if(sharedIdx >= 0) {
+    sharedPls[sharedIdx].videos = pl.videos;
+    window._fbSharedPlaylistsCache = sharedPls;
+    if(window._fbSaveSharedPlaylists) window._fbSaveSharedPlaylists(sharedPls);
+  }
+  renderMyAddVideoList();
+  renderMypagePlaylist();
+}
+
+// マイプレイリスト再生
+function openMyPlaylist(i) {
+  loadMyPlaylists();
+  const pl = myPlaylists[i];
+  if(!pl || pl.videos.length === 0) { showToast('動画がありません。「＋ 動画」から追加してください'); return; }
+  currentPlId = 'my:' + i;
+  currentPlIndex = 0;
+  document.getElementById('playlist-player-title').textContent = pl.name;
+  renderPlTrackList(pl);
+  plPlayAt(0);
+  showPage('playlist-player');
+}
+
+// ===== プレイリスト再生（おすすめ・マイ共通） =====
+let playlists = []; // おすすめページ用（旧、後方互換）
+let currentPlIndex = 0;
+let currentPlId = null;
+
+function _getPlayingPlaylist() {
+  if(currentPlId === null) return null;
+  if(typeof currentPlId === 'string' && currentPlId.startsWith('shared:')) {
+    const i = parseInt(currentPlId.split(':')[1]);
+    return (window._fbSharedPlaylistsCache || [])[i] || null;
+  }
+  if(typeof currentPlId === 'string' && currentPlId.startsWith('my:')) {
+    loadMyPlaylists();
+    const i = parseInt(currentPlId.split(':')[1]);
+    return myPlaylists[i] || null;
+  }
+  // 旧: おすすめページの数値index
+  return playlists[currentPlId] || null;
+}
+
+function renderPlTrackList(pl) {
+  const list = document.getElementById('pl-track-list');
+  const videos = pl.videos.map(id => VIDEOS.find(v => v.id === id)).filter(Boolean);
+  list.innerHTML = videos.map((v, i) => {
+    const thumb = v.unlisted ? '' : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+    return `<div class="pl-track-item ${i === currentPlIndex ? 'active' : ''}" onclick="plPlayAt(${i})">
+      <span class="pl-track-num">${i+1}</span>
+      <img class="pl-track-thumb" src="${thumb}" alt="" onerror="this.style.display='none'">
+      <span class="pl-track-title">${escHtml(v.title)}</span>
+    </div>`;
+  }).join('');
+}
+function plPlayAt(idx) {
+  const pl = _getPlayingPlaylist();
+  if(!pl) return;
+  const videos = pl.videos.map(id => VIDEOS.find(v => v.id === id)).filter(Boolean);
+  if(idx < 0 || idx >= videos.length) return;
+  currentPlIndex = idx;
+  const v = videos[idx];
+  document.getElementById('pl-yt-player').src = v.yt ? `https://www.youtube.com/embed/${v.yt}?autoplay=1` : '';
+  document.getElementById('pl-video-title').textContent = v.title;
+  document.getElementById('pl-progress').textContent = `${idx+1} / ${videos.length}`;
+  renderPlTrackList(pl);
+}
+function plNext() {
+  const pl = _getPlayingPlaylist();
+  if(!pl) return;
+  const videos = pl.videos.map(id => VIDEOS.find(v => v.id === id)).filter(Boolean);
+  if(currentPlIndex < videos.length - 1) plPlayAt(currentPlIndex + 1);
+  else showToast('最後の動画です');
+}
+function plPrev() {
+  if(currentPlIndex > 0) plPlayAt(currentPlIndex - 1);
+  else showToast('最初の動画です');
+}
+
+// ===== 旧おすすめページ用（後方互換・管理者向け新規作成） =====
+const LS_PLAYLISTS_KEY = 'mc_playlists';
+function loadPlaylists() {
+  try { const r = localStorage.getItem(LS_PLAYLISTS_KEY); if(r) playlists = JSON.parse(r); } catch(e) { playlists = []; }
+}
+function savePlaylists() {
+  try { localStorage.setItem(LS_PLAYLISTS_KEY, JSON.stringify(playlists)); } catch(e) {}
+}
+function openNewPlaylistModal() {
+  document.getElementById('new-playlist-name').value = '';
+  document.getElementById('modal-new-playlist').classList.add('open');
+  setTimeout(() => document.getElementById('new-playlist-name').focus(), 100);
+}
+async function createPlaylist() {
+  const name = document.getElementById('new-playlist-name').value.trim();
+  if(!name) { showToast('名前を入力してください'); return; }
+  const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
+  const users = window._fbUsersCache || {};
+  const key = currentUserEmail.replace(/[.@]/g,'_');
+  const ownerName = (users[key] && users[key].name) || currentUserEmail;
+  const id = 'spl_' + Date.now();
+  sharedPls.push({ id, name, videos: [], ownerEmail: currentUserEmail, ownerName, sharedAt: new Date().toISOString() });
+  window._fbSharedPlaylistsCache = sharedPls;
+  await window._fbSaveSharedPlaylists(sharedPls);
+  closeModal('modal-new-playlist');
+  renderPlaylistPage();
+  showToast('✅ おすすめプレイリストを作成しました');
+}
+let _plTargetIndex = -1;
+function openAddVideoModal(plIdx) {
+  // おすすめページから動画追加（共有プレイリストのplIdx番目）
+  _plTargetIndex = plIdx;
+  document.getElementById('pl-video-search').value = '';
+  document.getElementById('modal-add-to-playlist').classList.add('open');
+  renderAddVideoList();
+}
+function renderAddVideoList() {
+  const q = (document.getElementById('pl-video-search').value || '').toLowerCase();
+  const sharedPls = window._fbSharedPlaylistsCache || [];
+  const pl = sharedPls[_plTargetIndex];
+  if(!pl) return;
+  const filtered = VIDEOS.filter(v => !q || v.title.toLowerCase().includes(q) || v.tags.some(t => t.toLowerCase().includes(q)));
+  const container = document.getElementById('pl-add-video-list');
+  if(filtered.length === 0) { container.innerHTML = '<div style="padding:20px;text-align:center;color:#aaa;font-size:13px">動画が見つかりません</div>'; return; }
+  container.innerHTML = filtered.map(v => {
+    const inList = pl.videos.includes(v.id);
+    const thumb = v.unlisted ? '' : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+    return `<div class="pl-add-video-item ${inList ? 'in-list' : ''}" onclick="toggleVideoInPlaylist('${v.id}')">
+      <img class="pl-add-video-thumb" src="${thumb}" alt="" onerror="this.style.display='none'">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500;color:#111;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escHtml(v.title)}</div>
+      </div>
+      <span style="font-size:18px;flex-shrink:0">${inList ? '✅' : '➕'}</span>
+    </div>`;
+  }).join('');
+}
+async function toggleVideoInPlaylist(videoId) {
+  const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
+  const pl = sharedPls[_plTargetIndex];
+  if(!pl) return;
+  const idx = pl.videos.indexOf(videoId);
+  if(idx >= 0) { pl.videos.splice(idx, 1); showToast('削除しました'); }
+  else { pl.videos.push(videoId); showToast('✅ 追加しました'); }
+  window._fbSharedPlaylistsCache = sharedPls;
+  await window._fbSaveSharedPlaylists(sharedPls);
+  renderAddVideoList();
+  renderPlaylistPage();
+}
+function openPlaylist(i) {
+  openSharedPlaylist(i);
+}
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -2708,6 +3278,7 @@ function showPage(name) {
   if(name === 'mypage') { renderMypage(); }
   if(name === 'member') { initMemberPage(); }
   if(name === 'adminpage') { refreshAdminPage(); }
+  if(name === 'playlist') { renderPlaylistPage(); }
   if(name === 'register') {
     document.getElementById('reg-form-view').style.display = 'block';
     document.getElementById('reg-success-view').style.display = 'none';
@@ -3200,6 +3771,7 @@ async function submitRegistration() {
 }
 
 // --- 管理者ページ描画 ---
+let _adminMemberQuery = '';
 function refreshAdminPage() {
   const users = window._fbUsersCache || {};
   const list = Object.values(users);
@@ -3235,15 +3807,35 @@ function refreshAdminPage() {
     }
   }
 
-  // 会員テーブル
+  // 会員テーブル（検索バー付き）
   const memWrap = document.getElementById('member-table-wrap');
   if(memWrap) {
-    if(others.length === 0) {
-      memWrap.innerHTML = '<div class="empty-state">まだ登録済み会員はいません</div>';
+    // 検索フィルタ
+    const q = _adminMemberQuery.toLowerCase();
+    const filtered = q
+      ? others.filter(u =>
+          (u.name||'').toLowerCase().includes(q) ||
+          (u.email||'').toLowerCase().includes(q) ||
+          (u.generation||'').toLowerCase().includes(q) ||
+          (u.grade||'').toLowerCase().includes(q))
+      : others;
+
+    const searchBar = `<div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa">
+      <input type="text" id="admin-member-search"
+        placeholder="名前・メール・期・学年で検索..."
+        value="${escHtml(_adminMemberQuery)}"
+        oninput="_adminMemberQuery=this.value;refreshAdminPage()"
+        style="width:100%;border:1px solid #ddd;border-radius:6px;padding:8px 12px;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box"
+        onfocus="this.style.borderColor='#9acd32'"
+        onblur="this.style.borderColor='#ddd'">
+    </div>`;
+
+    if(filtered.length === 0) {
+      memWrap.innerHTML = searchBar + '<div class="empty-state">' + (q ? '該当する会員が見つかりません' : 'まだ登録済み会員はいません') + '</div>';
     } else {
-      memWrap.innerHTML = `<table class="req-table">
-        <thead><tr><th>名前</th><th>メール</th><th>期</th><th>学年</th><th>投稿</th><th>ステータス</th><th>操作</th></tr></thead>
-        <tbody>${others.map(u => {
+      memWrap.innerHTML = searchBar + `<table class="req-table">
+        <thead><tr><th>名前</th><th>メール</th><th>期</th><th>学年</th><th>投稿</th><th>管理者</th><th>ステータス</th><th>操作</th></tr></thead>
+        <tbody>${filtered.map(u => {
           const badge = u.status === 'active'
             ? '<span class="badge-status badge-active">有効</span>'
             : u.status === 'approved'
@@ -3254,18 +3846,25 @@ function refreshAdminPage() {
           const postToggle = u.status === 'active'
             ? `<button class="${u.canPost ? 'btn-approve' : 'btn-reject'}" style="font-size:11px;padding:3px 8px" onclick="togglePostPerm('${escHtml(u.email)}')">${u.canPost ? '✓ 許可中' : '✗ 不可'}</button>`
             : '-';
+          const adminToggle = `<button class="${u.isAdmin ? 'btn-approve' : 'btn-revoke'}" style="font-size:11px;padding:3px 8px" onclick="toggleAdminPerm('${escHtml(u.email)}')">${u.isAdmin ? '⭐ 管理者' : '一般'}</button>`;
           return `<tr>
             <td><strong>${escHtml(u.name)}</strong></td>
             <td style="font-size:12px">${escHtml(u.email)}</td>
             <td>${escHtml(u.generation)}</td>
             <td>${escHtml(u.grade)}</td>
             <td>${postToggle}</td>
+            <td>${adminToggle}</td>
             <td>${badge}</td>
             <td><button class="btn-revoke" onclick="revokeUser('${escHtml(u.email)}')">無効化</button></td>
           </tr>`;
         }).join('')}
         </tbody>
       </table>`;
+    }
+    // 検索フォーカス維持
+    if(q) {
+      const inp = document.getElementById('admin-member-search');
+      if(inp) { inp.focus(); const len = inp.value.length; inp.setSelectionRange(len, len); }
     }
   }
 }
@@ -3285,29 +3884,25 @@ function updateReqBadge() {
   }
 }
 
-// --- 承認処理 ---
+// --- 承認処理（確認なし） ---
 async function approveUser(email) {
-  if(!confirm(`「${email}」を承認してパスワード設定メールを送りますか？`)) return;
   const users = { ...(window._fbUsersCache || {}) };
   const key = email.replace(/[.@]/g,'_');
   if(!users[key]) return;
+  const btn = document.querySelector(`button[onclick="approveUser('${email}')"]`);
+  if(btn) { btn.disabled = true; btn.textContent = '処理中...'; }
 
-  // トークン生成
   const token = btoa(email + ':' + Date.now() + ':' + Math.random().toString(36));
   users[key] = { ...users[key], status: 'approved', approvedAt: new Date().toISOString(), token };
   await window._fbSaveUsersSummary(users);
 
-  // パスワード設定リンク
   const setPassUrl = location.href.split('?')[0] + '?setpass=' + encodeURIComponent(token);
-
-  // EmailJS でメール送信
   await sendApprovalEmail(users[key], setPassUrl);
   showToast('✅ 承認しました。パスワード設定メールを送信しました');
 }
 
-// --- 拒否処理 ---
+// --- 拒否処理（確認なし） ---
 async function rejectUser(email) {
-  if(!confirm(`「${email}」の申請を拒否しますか？`)) return;
   const users = { ...(window._fbUsersCache || {}) };
   const key = email.replace(/[.@]/g,'_');
   if(!users[key]) return;
@@ -3316,7 +3911,7 @@ async function rejectUser(email) {
   showToast('申請を拒否しました');
 }
 
-// --- 投稿権限トグル ---
+// --- 投稿権限トグル（確認なし） ---
 async function togglePostPerm(email) {
   const users = { ...(window._fbUsersCache || {}) };
   const key = email.replace(/[.@]/g,'_');
@@ -3326,9 +3921,22 @@ async function togglePostPerm(email) {
   showToast(users[key].canPost ? '✅ 投稿権限を付与しました' : '投稿権限を剥奪しました');
 }
 
-// --- 無効化 ---
+// --- 管理者権限トグル（警告あり） ---
+async function toggleAdminPerm(email) {
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = email.replace(/[.@]/g,'_');
+  if(!users[key]) return;
+  const isCurrentlyAdmin = !!users[key].isAdmin;
+  const action = isCurrentlyAdmin ? '管理者権限を剥奪' : '管理者権限を付与';
+  if(!confirm(`⚠️ 警告\n\n「${users[key].name}（${email}）」に${action}しますか？\n\n管理者は全会員の承認・拒否・権限変更が可能になります。`)) return;
+  users[key] = { ...users[key], isAdmin: !isCurrentlyAdmin };
+  await window._fbSaveUsersSummary(users);
+  showToast(isCurrentlyAdmin ? '管理者権限を剥奪しました' : '✅ 管理者権限を付与しました');
+}
+
+// --- 無効化（確認あり・危険な操作なので残す） ---
 async function revokeUser(email) {
-  if(!confirm(`「${email}」を無効化しますか？`)) return;
+  if(!confirm(`「${email}」を無効化しますか？\nログインできなくなります。`)) return;
   const users = { ...(window._fbUsersCache || {}) };
   const key = email.replace(/[.@]/g,'_');
   if(!users[key]) return;
