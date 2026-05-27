@@ -903,6 +903,7 @@ nav {
   <div class="admin-bar" id="admin-bar">
     <span class="admin-bar-label">🔧 管理者モード</span>
     <span style="color:#ff9090;font-size:12px">動画カードの編集・削除ボタンが表示されています</span>
+    <button onclick="openTagMasterModal()" style="margin-left:auto;background:none;border:1px solid #ff9090;border-radius:6px;padding:5px 12px;font-size:12px;color:#ff9090;cursor:pointer;font-family:inherit;font-weight:600">🏷️ タグ管理</button>
   </div>
   <div class="pagination-wrap" id="pagination-top"></div>
   <div class="video-grid" id="video-grid"></div>
@@ -1070,33 +1071,10 @@ nav {
         </div>
         <div class="post-field">
           <label>タグ <span class="required">※必須</span></label>
-          <div id="tag-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px"></div>
-
-          <div style="margin-bottom:8px">
-            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🎭 演目</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">
-              ${TAB_TAGS[0].map(t=>`<span class="post-tag-preset" onclick="addTag('${t}')">${t}</span>`).join('')}
-            </div>
-          </div>
-          <div style="margin-bottom:8px">
-            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🏫 団体</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">
-              ${TAB_TAGS[1].map(t=>`<span class="post-tag-preset" onclick="addTag('${t}')">${t}</span>`).join('')}
-            </div>
-          </div>
-          <div style="margin-bottom:10px">
-            <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">🤹 技法</div>
-            <div style="display:flex;flex-wrap:wrap;gap:6px">
-              ${TAB_TAGS[2].map(t=>`<span class="post-tag-preset" onclick="addTag('${t}')">${t}</span>`).join('')}
-            </div>
-          </div>
-
-          <div class="tag-input-wrap" onclick="document.getElementById('tag-text-input').focus()" style="margin-top:4px">
-            <input type="text" class="tag-text-input" id="tag-text-input"
-              placeholder="上のボタン以外のタグは直接入力 → Enter"
-              oninput="onTagInput(this.value)" onkeydown="onTagKeydown(event)">
-          </div>
-          <div class="hint">セクションのボタンをクリックするか、直接入力できます</div>
+          <div id="tag-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
+          <!-- タグセクションはJSで動的生成 -->
+          <div id="post-tag-sections"></div>
+          <div class="hint" style="margin-top:6px">セクションのボタンをクリック、または直接入力 → Enter</div>
         </div>
         <div class="post-field">
           <label>タイトル <span class="optional">（任意）</span></label>
@@ -1180,6 +1158,18 @@ nav {
 
 <div class="toast" id="toast"></div>
 
+<!-- タグマスター管理モーダル -->
+<div class="modal-overlay" id="modal-tag-master">
+  <div class="modal-box-wide" style="max-width:620px">
+    <h3 style="font-size:17px;font-weight:700;color:#111;margin-bottom:4px">🏷️ タグマスター管理</h3>
+    <p style="font-size:12px;color:#888;margin-bottom:18px">各セクションのタグを追加・削除できます。変更は投稿フォームと絞り込みタブに即時反映されます。</p>
+    <div id="tag-master-sections"></div>
+    <div class="modal-btns" style="padding-top:8px">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-tag-master')">閉じる</button>
+    </div>
+  </div>
+</div>
+
 <!-- ========================================================
      Firebase SDK (ESM モジュール)
      ★ 下記の firebaseConfig を自分のプロジェクトのものに書き換えてください
@@ -1228,7 +1218,15 @@ nav {
   // ---------- 初期化トリガー ----------
   // Firebase が準備できてからアプリを起動する
   window._fbLoadVideos().then(saved => {
-    if (saved) window.VIDEOS = saved; // デフォルト動画を上書き
+    if (saved) {
+      // 古い猫SVGサムネを削除（data:image/svg+xml で猫が入っているものをクリア）
+      saved.forEach(v => {
+        if (v.customThumb && v.customThumb.includes('svg')) {
+          delete v.customThumb;
+        }
+      });
+      window.VIDEOS = saved;
+    }
     // ローカルのフォールバック（localStorage）も確認
     if (!saved) {
       try {
@@ -1371,10 +1369,10 @@ function loadMeta() {
       videoMeta = JSON.parse(raw);
       // いいね数を0にリセット（かさ増し対策）
       Object.keys(videoMeta).forEach(id => {
-        if(videoMeta[id].likes > 0 && !videoMeta[id].liked) {
-          videoMeta[id].likes = 0;
-        }
+        videoMeta[id].likes = 0;
+        videoMeta[id].liked = false;
       });
+      saveMeta();
     }
   } catch(e) { videoMeta = {}; }
 }
@@ -1781,9 +1779,9 @@ function initPostPage() {
   }
   document.getElementById('no-perm-view').style.display = 'none';
   document.getElementById('post-form-view').style.display = 'block';
-  ['post-url','post-title','post-author','tag-text-input'].forEach(id => document.getElementById(id).value = '');
+  ['post-url','post-title','post-author'].forEach(id => document.getElementById(id).value = '');
   postTags = []; parsedYtId = ''; postCustomThumb = null;
-  renderTagChips(); hidePreview(); validateSubmit();
+  renderTagChips(); renderPostTagSections(); hidePreview(); validateSubmit();
   document.getElementById('unlisted-note').classList.remove('visible');
   // サムネリセット
   document.getElementById('post-thumb-file').value = '';
@@ -1873,6 +1871,94 @@ function renderTagChips() {
   document.getElementById('tag-chips').innerHTML = postTags.map((t,i) =>
     `<span class="tag-chip">${escHtml(t)}<button class="remove-tag" onclick="removeTag(${i})">×</button></span>`
   ).join('');
+}
+
+// ===== 投稿フォーム タグセクション描画 =====
+const SECTION_LABELS = ['🎭 演目', '🏫 団体', '🤹 技法'];
+function renderPostTagSections() {
+  const container = document.getElementById('post-tag-sections');
+  if(!container) return;
+  container.innerHTML = SECTION_LABELS.map((label, si) => `
+    <div style="margin-bottom:12px;padding:10px 12px;background:#fafafa;border:1px solid #eee;border-radius:8px">
+      <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px">${label}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px" id="post-preset-${si}">
+        ${TAB_TAGS[si].map(t=>`<span class="post-tag-preset" onclick="addTag('${escHtml(t)}')">${escHtml(t)}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="post-section-input-${si}" class="modal-tag-input" placeholder="直接入力 → Enter"
+          style="flex:1;font-size:12px;padding:6px 10px"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addTagFromSection(${si})}">
+        <button class="modal-tag-add-btn" style="font-size:12px;padding:6px 12px" onclick="addTagFromSection(${si})">追加</button>
+      </div>
+    </div>
+  `).join('');
+}
+function addTagFromSection(si) {
+  const input = document.getElementById(`post-section-input-${si}`);
+  const val = input.value.trim();
+  if(val) { addTag(val); input.value = ''; }
+}
+
+// ===== タグマスター管理モーダル =====
+const LS_TAB_TAGS_KEY = 'mc_tabTags';
+function loadTabTags() {
+  try {
+    const raw = localStorage.getItem(LS_TAB_TAGS_KEY);
+    if(raw) {
+      const saved = JSON.parse(raw);
+      if(Array.isArray(saved) && saved.length === 3) {
+        TAB_TAGS[0] = saved[0]; TAB_TAGS[1] = saved[1]; TAB_TAGS[2] = saved[2];
+      }
+    }
+  } catch(e) {}
+}
+function saveTabTags() {
+  try { localStorage.setItem(LS_TAB_TAGS_KEY, JSON.stringify(TAB_TAGS)); } catch(e) {}
+}
+function openTagMasterModal() {
+  renderTagMasterSections();
+  document.getElementById('modal-tag-master').classList.add('open');
+}
+function renderTagMasterSections() {
+  const container = document.getElementById('tag-master-sections');
+  container.innerHTML = SECTION_LABELS.map((label, si) => `
+    <div style="margin-bottom:16px;padding:12px 14px;background:#fafafa;border:1px solid #eee;border-radius:8px">
+      <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:10px">${label}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px" id="tm-tags-${si}">
+        ${TAB_TAGS[si].map((t,ti)=>`
+          <span style="display:inline-flex;align-items:center;gap:4px;background:var(--tag-bg);color:var(--tag-text);font-size:12px;font-weight:700;padding:4px 10px;border-radius:4px">
+            ${escHtml(t)}
+            <button onclick="deleteMasterTag(${si},${ti})" style="background:none;border:none;cursor:pointer;color:#a03000;font-size:14px;font-weight:900;padding:0 0 0 2px;line-height:1">×</button>
+          </span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="tm-input-${si}" class="modal-tag-input" placeholder="新しいタグを追加"
+          style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addMasterTag(${si})}">
+        <button class="modal-tag-add-btn" onclick="addMasterTag(${si})">追加</button>
+      </div>
+    </div>
+  `).join('');
+}
+function deleteMasterTag(si, ti) {
+  TAB_TAGS[si].splice(ti, 1);
+  saveTabTags();
+  renderTagMasterSections();
+  renderTags();
+  if(document.getElementById('post-tag-sections')) renderPostTagSections();
+  showToast(`🏷️ タグを削除しました`);
+}
+function addMasterTag(si) {
+  const input = document.getElementById(`tm-input-${si}`);
+  const val = input.value.trim();
+  if(!val) return;
+  if(TAB_TAGS[si].includes(val)) { showToast('既に存在するタグです'); return; }
+  TAB_TAGS[si].push(val);
+  input.value = '';
+  saveTabTags();
+  renderTagMasterSections();
+  renderTags();
+  if(document.getElementById('post-tag-sections')) renderPostTagSections();
+  showToast(`✅ タグ「${val}」を追加しました`);
 }
 function validateSubmit() {
   document.getElementById('submit-btn').disabled = !(parsedYtId && postTags.length>0);
@@ -2281,6 +2367,7 @@ window._appInit = function() {
   if (_appInitDone) return;
   _appInitDone = true;
   loadMeta();
+  loadTabTags(); // 管理者がカスタマイズしたタグマスターを読み込む
   loadVideos(); // Firebase版では何もしない（既に上書き済み）
   restoreSavedCred();
   document.getElementById('login-page').classList.add('active');
