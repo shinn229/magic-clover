@@ -1137,6 +1137,74 @@ nav {
 
 <div class="toast" id="toast"></div>
 
+<!-- ========================================================
+     Firebase SDK (ESM モジュール)
+     ★ 下記の firebaseConfig を自分のプロジェクトのものに書き換えてください
+     ======================================================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, doc, setDoc, getDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyA5bAy4b31s8xaWLXg8t6Hftk4WDiODK9s",
+    authDomain:        "glass-flux-424811-f0-eaf62.firebaseapp.com",
+    projectId:         "glass-flux-424811-f0-eaf62",
+    storageBucket:     "glass-flux-424811-f0-eaf62.firebasestorage.app",
+    messagingSenderId: "1034451463120",
+    appId:             "1:1034451463120:web:39ec5dacbb33c27f7e27d5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // ---------- 動画データをFirestoreに保存 ----------
+  window._fbSaveVideos = async function(videos) {
+    try {
+      await setDoc(doc(db, "mc_data", "videos"), { list: videos });
+    } catch(e) {
+      console.error("[Firebase] saveVideos エラー:", e);
+    }
+  };
+
+  // ---------- 動画データをFirestoreから読み込む ----------
+  window._fbLoadVideos = async function() {
+    try {
+      const snap = await getDoc(doc(db, "mc_data", "videos"));
+      if (snap.exists()) {
+        const saved = snap.data().list;
+        if (Array.isArray(saved) && saved.length > 0) return saved;
+      }
+    } catch(e) {
+      console.error("[Firebase] loadVideos エラー:", e);
+    }
+    return null; // 失敗 or データなし → ローカルのデフォルト動画を使う
+  };
+
+  // ---------- 初期化トリガー ----------
+  // Firebase が準備できてからアプリを起動する
+  window._fbLoadVideos().then(saved => {
+    if (saved) window.VIDEOS = saved; // デフォルト動画を上書き
+    // ローカルのフォールバック（localStorage）も確認
+    if (!saved) {
+      try {
+        const raw = localStorage.getItem('mc_videos');
+        if (raw) {
+          const loc = JSON.parse(raw);
+          if (Array.isArray(loc) && loc.length > 0) window.VIDEOS = loc;
+        }
+      } catch(e) {}
+    }
+    // DOM が読み込み済みなら即実行、そうでなければ待つ
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', window._appInit);
+    } else {
+      window._appInit();
+    }
+  });
+</script>
+
 <script>
 // ===== TAG TAXONOMY =====
 // TAB_TAGS[0]=演目, [1]=団体, [2]=技法
@@ -1216,7 +1284,8 @@ const THUMB_COLORS = [
 ];
 
 // ===== VIDEOS =====
-let VIDEOS = [
+// Firebase モジュールが window.VIDEOS を上書きするので var で宣言
+var VIDEOS = [
   { id:'v001', title:'2026 畢宿祭 1-1 扇子「銀の旋律」田島 葵 (アオイ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/扇子','国際信州大学'], yt:'YCBEMQRIAxQ', unlisted:false, thumbColor:THUMB_COLORS[0] },
   { id:'v002', title:'2026 畢宿祭 1-2 カード「Shadow Play」木村 蒼汰 (ソウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'FtWKhFHbFuU', unlisted:false, thumbColor:THUMB_COLORS[1] },
   { id:'v003', title:'2026 畢宿祭 1-3 ハト「白夜」中川 莉奈 (リナ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ハト','国際信州大学'], yt:'JbCiHEZNxw0', unlisted:false, thumbColor:THUMB_COLORS[2] },
@@ -1892,17 +1961,20 @@ function getAvatarContent() {
 const LS_VIDEOS_KEY = 'mc_videos';
 let editTags = []; // 編集中のタグ配列
 
+// ===== Firebase連携: saveVideos / loadVideos =====
+// saveVideos: Firestore + localStorage（バックアップ）に保存
 function saveVideos() {
+  // Firestoreへ保存（非同期・エラーは握り潰す）
+  if (typeof window._fbSaveVideos === 'function') {
+    window._fbSaveVideos(VIDEOS);
+  }
+  // ローカルにもバックアップ
   try { localStorage.setItem(LS_VIDEOS_KEY, JSON.stringify(VIDEOS)); } catch(e) {}
 }
+// loadVideos: Firebase モジュール側で起動前に処理済みのため、ここでは何もしない
 function loadVideos() {
-  try {
-    const raw = localStorage.getItem(LS_VIDEOS_KEY);
-    if(raw) {
-      const saved = JSON.parse(raw);
-      if(Array.isArray(saved) && saved.length > 0) VIDEOS = saved;
-    }
-  } catch(e) {}
+  // Firebase ESM モジュールが _appInit より前に VIDEOS を上書きしている
+  // （フォールバックとして localStorage も確認済み）
 }
 
 // ---- 総合編集モーダルを開く ----
@@ -2121,14 +2193,31 @@ function playVideoFromRanking(id) {
 }
 
 // ===== INIT =====
-// localStorageからデータ復元
-loadMeta();
-loadVideos();
-restoreSavedCred();
-// 未ログイン状態でスタート
-document.getElementById('login-page').classList.add('active');
-renderTags();
-renderGrid();
+// Firebase ESM モジュールが VIDEOS を上書きしてから _appInit() を呼ぶ。
+// （ESM が使えない環境 / firebaseConfig 未設定時のフォールバックとして
+//   DOMContentLoaded でも呼ばれるが、2重実行防止のガードを入れている）
+let _appInitDone = false;
+window._appInit = function() {
+  if (_appInitDone) return;
+  _appInitDone = true;
+  loadMeta();
+  loadVideos(); // Firebase版では何もしない（既に上書き済み）
+  restoreSavedCred();
+  document.getElementById('login-page').classList.add('active');
+  renderTags();
+  renderGrid();
+};
+
+// Firebase が設定されていない場合や読み込み失敗時のフォールバック
+// （Firebase モジュールが _appInit を呼ばなかった場合に備える）
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    if (!_appInitDone) {
+      console.warn('[Magic Clover] Firebase未接続 → ローカルデータで起動');
+      window._appInit();
+    }
+  }, 3000); // 3秒待ってもFirebaseが起動しなければフォールバック
+});
 </script>
 </body>
 </html>
