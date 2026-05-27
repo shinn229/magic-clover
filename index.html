@@ -339,6 +339,12 @@ nav {
 .tag-pill.selected { outline: 2px solid #c07800; transform: scale(1.04); }
 .tag-pill:hover { opacity: 0.85; }
 
+
+.sort-bar { background: #fff; padding: 8px 24px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px; }
+.sort-label { font-size: 12px; color: #888; white-space: nowrap; }
+.sort-btn { background: none; border: 1px solid #ddd; border-radius: 20px; padding: 5px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; color: #555; transition: all 0.15s; white-space: nowrap; }
+.sort-btn:hover { border-color: var(--clover); color: var(--clover-darker); }
+.sort-btn.active { background: var(--clover); color: #1a2a00; border-color: var(--clover); }
 .pagination-wrap { background: #fff; padding: 10px 24px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .page-btn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; cursor: pointer; color: #333; transition: all 0.15s; }
 .page-btn:hover { background: #f0f0f0; }
@@ -888,12 +894,19 @@ nav {
       <span class="tag-tab active" onclick="switchTab(0)">演目</span>
       <span class="tag-tab" onclick="switchTab(1)">団体</span>
       <span class="tag-tab" onclick="switchTab(2)">技法</span>
+      <span class="tag-tab" onclick="switchTab(3)">その他</span>
     </div>
   </div>
   <div class="tags-area"><div class="tags-cloud" id="tags-cloud"></div></div>
   <div class="search-bar">
     <input type="text" class="search-input" id="search-input" placeholder="動画を検索..." oninput="renderGrid()">
     <span class="search-count" id="search-count"></span>
+  </div>
+  <div class="sort-bar">
+    <span class="sort-label">並び替え：</span>
+    <button class="sort-btn active" id="sort-popular" onclick="setSort('popular')">♥ 人気順</button>
+    <button class="sort-btn" id="sort-newest" onclick="setSort('newest')">🕐 最新</button>
+    <button class="sort-btn" id="sort-oldest" onclick="setSort('oldest')">📅 古い順</button>
   </div>
   <div id="filter-banner" class="filter-banner" style="display:none">
     <span id="filter-label"></span>
@@ -914,6 +927,7 @@ nav {
 <div id="player-page" class="page">
   <div class="player-video-wrap">
     <iframe id="yt-player" allowfullscreen allow="autoplay; encrypted-media; picture-in-picture"></iframe>
+    <video id="local-player" controls style="width:100%;aspect-ratio:16/9;background:#000;display:none"></video>
   </div>
   <div class="player-info">
     <h2 class="player-title" id="player-title-text"></h2>
@@ -1044,19 +1058,59 @@ nav {
         <h1>動画を投稿する</h1>
       </div>
       <div class="post-body">
+        <!-- 動画ソース選択タブ -->
         <div class="post-field">
-          <label>YouTube リンク <span class="required">※必須</span></label>
-          <input type="url" id="post-url" placeholder="https://www.youtube.com/watch?v=... または限定公開URL" oninput="onUrlInput(this.value)">
-          <div class="hint">通常URL・短縮URL（youtu.be）・限定公開URLのいずれも使用できます</div>
-          <div class="unlisted-note" id="unlisted-note">🔒 <strong>限定公開動画</strong>として登録します。会員のみ再生できます。</div>
-          <div class="yt-preview" id="yt-preview">
-            <img id="preview-thumb" src="" alt="">
-            <div>
-              <div id="preview-title" style="font-size:13px;font-weight:500;color:#222"></div>
-              <div class="yt-preview-ok">✓ YouTube動画IDを認識しました</div>
+          <label>動画ソース <span class="required">※どちらか必須</span></label>
+          <div id="video-source-tabs" style="display:flex;gap:0;border:1px solid #ccc;border-radius:8px;overflow:hidden;margin-bottom:14px">
+            <button id="vsrc-yt-btn" onclick="switchVideoSource('yt')"
+              style="flex:1;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border:none;background:#9acd32;color:#1a2a00;transition:background 0.15s">
+              📺 YouTube リンク
+            </button>
+            <button id="vsrc-file-btn" onclick="switchVideoSource('file')"
+              style="flex:1;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;border:none;background:#f0f0f0;color:#555;border-left:1px solid #ccc;transition:background 0.15s">
+              📱 動画ファイル
+            </button>
+          </div>
+
+          <!-- YouTube入力エリア -->
+          <div id="vsrc-yt-area">
+            <input type="url" id="post-url" placeholder="https://www.youtube.com/watch?v=... または限定公開URL" oninput="onUrlInput(this.value)">
+            <div class="hint">通常URL・短縮URL（youtu.be）・限定公開URLのいずれも使用できます</div>
+            <div class="unlisted-note" id="unlisted-note">🔒 <strong>限定公開動画</strong>として登録します。会員のみ再生できます。</div>
+            <div class="yt-preview" id="yt-preview">
+              <img id="preview-thumb" src="" alt="">
+              <div>
+                <div id="preview-title" style="font-size:13px;font-weight:500;color:#222"></div>
+                <div class="yt-preview-ok">✓ YouTube動画IDを認識しました</div>
+              </div>
             </div>
           </div>
+
+          <!-- 動画ファイルアップロードエリア -->
+          <div id="vsrc-file-area" style="display:none">
+            <div id="video-drop-zone" style="border:2px dashed #ccc;border-radius:8px;padding:28px 16px;text-align:center;cursor:pointer;transition:border 0.15s,background 0.15s;background:#fafafa"
+              ondragover="event.preventDefault();this.style.borderColor='#9acd32';this.style.background='#f0f7e0'"
+              ondragleave="this.style.borderColor='#ccc';this.style.background='#fafafa'"
+              ondrop="onVideoDrop(event)"
+              onclick="document.getElementById('post-video-file').click()">
+              <div style="font-size:36px;margin-bottom:8px">📱</div>
+              <div style="font-size:14px;font-weight:700;color:#444;margin-bottom:4px">動画ファイルを選択 または ここにドロップ</div>
+              <div style="font-size:12px;color:#888">MP4・MOV・HEVC など（携帯で撮影した動画もOK）</div>
+              <input type="file" id="post-video-file" accept="video/*" style="display:none" onchange="onVideoFileChange(event)">
+            </div>
+            <!-- 動画プレビュー -->
+            <div id="video-file-preview" style="display:none;margin-top:12px">
+              <video id="video-preview-player" controls style="width:100%;max-height:200px;border-radius:8px;background:#000;display:block"></video>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                <span id="video-file-name" style="font-size:12px;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+                <button onclick="clearVideoFile()" style="background:none;border:1px solid #ccc;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;color:#888;white-space:nowrap">× 削除</button>
+              </div>
+            </div>
+            <div class="hint" style="margin-top:8px">⚠️ 動画は端末内に保存されます。大きなファイルは読み込みに時間がかかる場合があります。</div>
+          </div>
         </div>
+
+        <!-- サムネイル -->
         <div class="post-field">
           <label>サムネイル画像 <span class="optional">（任意）</span></label>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -1067,7 +1121,7 @@ nav {
             <img id="post-thumb-preview" src="" alt="" style="display:none;width:96px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #ddd">
             <button id="post-thumb-clear" style="display:none;background:none;border:1px solid #ccc;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;color:#888" onclick="clearThumb()">× 削除</button>
           </div>
-          <div class="hint">選択しない場合はYouTubeのサムネイルが自動表示されます</div>
+          <div class="hint" id="thumb-hint">選択しない場合はYouTubeのサムネイルが自動表示されます</div>
         </div>
         <div class="post-field">
           <label>タグ <span class="required">※必須</span></label>
@@ -1248,14 +1302,15 @@ nav {
 
 <script>
 // ===== TAG TAXONOMY =====
-// TAB_TAGS[0]=演目, [1]=団体, [2]=技法
+// TAB_TAGS[0]=演目, [1]=団体, [2]=技法, [3]=その他
 const TAB_TAGS = [
   ['2026','2025','2024','畢宿祭','学祭','スポンジ','カード','メンタル',
    '演目/扇子','演目/カード','演目/ハト','演目/ウォンド','演目/マスク','演目/シンブル',
    '演目/コイン','演目/リング','演目/ロープ','演目/シルク','演目/メンタル','演目/メリケン',
    '司会','クロースアップ','オープニング'],
   ['国際信州大学'],
-  ['パーム','アニバーサリーワルツ','スプレッド','フォールスカット']
+  ['パーム','アニバーサリーワルツ','スプレッド','フォールスカット'],
+  []
 ];
 
 // 猫のサンプル画像（SVGインライン・CORS不要・確実表示）
@@ -1398,6 +1453,7 @@ let isAdmin = false;   // 管理者フラグ
 let canPost = true;
 let currentTab = 0;
 let currentVideoId = null;
+let currentSort = 'popular'; // popular | newest | oldest
 
 // ===== AUTH =====
 // ⚠️ デモ用認証。本番公開前にSupabase等のバックエンド認証に必ず移行すること
@@ -1523,6 +1579,16 @@ function clearFilters() {
   currentPage = 1;
   renderTags(); renderGrid(); updateFilterBanner();
 }
+
+function setSort(mode) {
+  currentSort = mode;
+  ['popular','newest','oldest'].forEach(m => {
+    const btn = document.getElementById('sort-' + m);
+    if(btn) btn.classList.toggle('active', m === mode);
+  });
+  currentPage = 1;
+  renderGrid();
+}
 function updateFilterBanner() {
   const banner = document.getElementById('filter-banner');
   if(selectedTags.length > 0) {
@@ -1534,11 +1600,19 @@ function updateFilterBanner() {
 // ===== GRID =====
 function getFiltered() {
   const q = (document.getElementById('search-input')||{value:''}).value.toLowerCase();
-  return VIDEOS.filter(v => {
+  let result = VIDEOS.filter(v => {
     const matchTags = selectedTags.length === 0 || selectedTags.every(t => v.tags.includes(t));
     const matchSearch = !q || v.title.toLowerCase().includes(q) || v.tags.some(t=>t.toLowerCase().includes(q));
     return matchTags && matchSearch;
   });
+  if (currentSort === 'popular') {
+    result = result.slice().sort((a, b) => (getMeta(b.id).likes || 0) - (getMeta(a.id).likes || 0));
+  } else if (currentSort === 'newest') {
+    result = result.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  } else if (currentSort === 'oldest') {
+    result = result.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  }
+  return result;
 }
 function renderGrid() {
   const filtered = getFiltered();
@@ -1593,6 +1667,8 @@ function videoCard(v) {
   // カスタムサムネがあればそれを、なければYouTubeサムネ、限定公開はロックアイコン
   const thumbSrc = v.customThumb
     ? v.customThumb
+    : v.localThumb
+      ? `data:image/svg+xml,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='320' height='180'><rect width='320' height='180' fill='#0d1520'/><text x='160' y='80' text-anchor='middle' fill='#9acd32' font-size='40'>🎬</text><text x='160' y='120' text-anchor='middle' fill='#aaa' font-size='14' font-family='sans-serif'>ローカル動画</text></svg>")}`
     : v.unlisted
       ? `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='180'><rect width='320' height='180' fill='%230d1520'/><text x='160' y='90' text-anchor='middle' fill='%239acd32' font-size='30'>🔒</text></svg>`
       : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
@@ -1640,7 +1716,18 @@ function playVideo(id) {
   if(!v) return;
   currentVideoId = id;
   document.getElementById('player-title-text').textContent = v.title;
-  document.getElementById('yt-player').src = `https://www.youtube.com/embed/${v.yt}?autoplay=1`;
+  const ytPlayer = document.getElementById('yt-player');
+  const localPlayer = document.getElementById('local-player');
+  if(v.localVideo) {
+    ytPlayer.src = '';
+    ytPlayer.style.display = 'none';
+    localPlayer.src = v.localVideo;
+    localPlayer.style.display = 'block';
+  } else {
+    localPlayer.pause(); localPlayer.src = ''; localPlayer.style.display = 'none';
+    ytPlayer.style.display = '';
+    ytPlayer.src = `https://www.youtube.com/embed/${v.yt}?autoplay=1`;
+  }
   document.getElementById('player-tags').innerHTML = v.tags.map((t, i) => {
     if(isAdmin) {
       return `<span class="player-tag-admin">${escHtml(t)}<button class="tag-del" onclick="adminDeleteTag('${v.id}',${i})" title="このタグを削除">×</button></span>`;
@@ -1771,6 +1858,9 @@ function mypageCard(v) {
 
 // ===== POST PAGE =====
 let postTags = [], parsedYtId = '', urlDebounce = null, postCustomThumb = null;
+let postVideoSrc = 'yt'; // 'yt' or 'file'
+let postVideoFileData = null; // base64 of local video file
+let postVideoFileName = '';
 function initPostPage() {
   if(!canPost) {
     document.getElementById('no-perm-view').style.display = 'block';
@@ -1781,13 +1871,94 @@ function initPostPage() {
   document.getElementById('post-form-view').style.display = 'block';
   ['post-url','post-title','post-author'].forEach(id => document.getElementById(id).value = '');
   postTags = []; parsedYtId = ''; postCustomThumb = null;
+  postVideoSrc = 'yt'; postVideoFileData = null; postVideoFileName = '';
   renderTagChips(); renderPostTagSections(); hidePreview(); validateSubmit();
   document.getElementById('unlisted-note').classList.remove('visible');
+  // ソースタブをYTに戻す
+  switchVideoSource('yt');
   // サムネリセット
   document.getElementById('post-thumb-file').value = '';
   document.getElementById('post-thumb-preview').style.display = 'none';
   document.getElementById('post-thumb-preview').src = '';
   document.getElementById('post-thumb-clear').style.display = 'none';
+  // 動画ファイルリセット
+  clearVideoFile();
+  document.getElementById('thumb-hint').textContent = '選択しない場合はYouTubeのサムネイルが自動表示されます';
+}
+function switchVideoSource(mode) {
+  postVideoSrc = mode;
+  const ytBtn = document.getElementById('vsrc-yt-btn');
+  const fileBtn = document.getElementById('vsrc-file-btn');
+  const ytArea = document.getElementById('vsrc-yt-area');
+  const fileArea = document.getElementById('vsrc-file-area');
+  const thumbHint = document.getElementById('thumb-hint');
+  if(!ytBtn) return;
+  if(mode === 'yt') {
+    ytBtn.style.background = '#9acd32'; ytBtn.style.color = '#1a2a00';
+    fileBtn.style.background = '#f0f0f0'; fileBtn.style.color = '#555';
+    ytArea.style.display = 'block'; fileArea.style.display = 'none';
+    if(thumbHint) thumbHint.textContent = '選択しない場合はYouTubeのサムネイルが自動表示されます';
+  } else {
+    fileBtn.style.background = '#9acd32'; fileBtn.style.color = '#1a2a00';
+    ytBtn.style.background = '#f0f0f0'; ytBtn.style.color = '#555';
+    ytArea.style.display = 'none'; fileArea.style.display = 'block';
+    if(thumbHint) thumbHint.textContent = '省略可。動画のスクリーンショットなどを設定できます';
+    // YouTube入力をクリア
+    parsedYtId = ''; hidePreview();
+    const urlEl = document.getElementById('post-url');
+    if(urlEl) urlEl.value = '';
+  }
+  validateSubmit();
+}
+function onVideoFileChange(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  handleVideoFile(file);
+}
+function onVideoDrop(e) {
+  e.preventDefault();
+  const dz = document.getElementById('video-drop-zone');
+  if(dz) { dz.style.borderColor='#ccc'; dz.style.background='#fafafa'; }
+  const file = e.dataTransfer.files[0];
+  if(!file || !file.type.startsWith('video/')) { showToast('⚠️ 動画ファイルを選択してください'); return; }
+  handleVideoFile(file);
+}
+function handleVideoFile(file) {
+  postVideoFileName = file.name;
+  const maxMB = 200;
+  if(file.size > maxMB * 1024 * 1024) {
+    showToast(`⚠️ ファイルサイズが大きすぎます（最大${maxMB}MB）`);
+    return;
+  }
+  showToast('⏳ 動画を読み込み中...');
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    postVideoFileData = ev.target.result;
+    const player = document.getElementById('video-preview-player');
+    if(player) { player.src = postVideoFileData; }
+    const nameEl = document.getElementById('video-file-name');
+    if(nameEl) nameEl.textContent = file.name + ' (' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
+    const preview = document.getElementById('video-file-preview');
+    if(preview) preview.style.display = 'block';
+    const dz = document.getElementById('video-drop-zone');
+    if(dz) dz.style.display = 'none';
+    showToast('✓ 動画を読み込みました');
+    validateSubmit();
+  };
+  reader.onerror = function() { showToast('⚠️ 動画の読み込みに失敗しました'); };
+  reader.readAsDataURL(file);
+}
+function clearVideoFile() {
+  postVideoFileData = null; postVideoFileName = '';
+  const player = document.getElementById('video-preview-player');
+  if(player) { player.src = ''; }
+  const preview = document.getElementById('video-file-preview');
+  if(preview) preview.style.display = 'none';
+  const dz = document.getElementById('video-drop-zone');
+  if(dz) dz.style.display = 'block';
+  const fileInput = document.getElementById('post-video-file');
+  if(fileInput) fileInput.value = '';
+  validateSubmit();
 }
 function onThumbFileChange(e) {
   const file = e.target.files[0];
@@ -1874,7 +2045,7 @@ function renderTagChips() {
 }
 
 // ===== 投稿フォーム タグセクション描画 =====
-const SECTION_LABELS = ['🎭 演目', '🏫 団体', '🤹 技法'];
+const SECTION_LABELS = ['🎭 演目', '🏫 団体', '🤹 技法', '📝 その他'];
 function renderPostTagSections() {
   const container = document.getElementById('post-tag-sections');
   if(!container) return;
@@ -1907,7 +2078,7 @@ function loadTabTags() {
     if(raw) {
       const saved = JSON.parse(raw);
       if(Array.isArray(saved) && saved.length === 3) {
-        TAB_TAGS[0] = saved[0]; TAB_TAGS[1] = saved[1]; TAB_TAGS[2] = saved[2];
+        TAB_TAGS[0] = saved[0]; TAB_TAGS[1] = saved[1]; TAB_TAGS[2] = saved[2]; if(saved[3]) TAB_TAGS[3] = saved[3];
       }
     }
   } catch(e) {}
@@ -1961,19 +2132,34 @@ function addMasterTag(si) {
   showToast(`✅ タグ「${val}」を追加しました`);
 }
 function validateSubmit() {
-  document.getElementById('submit-btn').disabled = !(parsedYtId && postTags.length>0);
+  const hasSource = postVideoSrc === 'yt' ? !!parsedYtId : !!postVideoFileData;
+  document.getElementById('submit-btn').disabled = !(hasSource && postTags.length > 0);
 }
 function submitVideo() {
-  const ytId = parsedYtId;
-  if(!ytId || postTags.length===0) return;
+  const hasSource = postVideoSrc === 'yt' ? !!parsedYtId : !!postVideoFileData;
+  if(!hasSource || postTags.length===0) return;
   const titleInput = document.getElementById('post-title').value.trim();
   const authorInput = document.getElementById('post-author').value.trim();
-  const urlVal = document.getElementById('post-url').value;
-  const unlisted = isUnlisted(urlVal);
   const today = new Date();
   const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
-  const title = titleInput || ('YouTube動画 ' + ytId + (authorInput?' / '+authorInput:''));
-  const newVideo = { id:'v'+String(VIDEOS.length+1).padStart(3,'0'), title, date:dateStr, tags:[...postTags], yt:ytId, unlisted, author:authorInput||null };
+  const newVideo = { id:'v'+String(VIDEOS.length+1).padStart(3,'0'), date:dateStr, tags:[...postTags], author:authorInput||null };
+  if(postVideoSrc === 'yt') {
+    const urlVal = document.getElementById('post-url').value;
+    const unlisted = isUnlisted(urlVal);
+    newVideo.yt = parsedYtId;
+    newVideo.unlisted = unlisted;
+    newVideo.title = titleInput || ('YouTube動画 ' + parsedYtId + (authorInput?' / '+authorInput:''));
+  } else {
+    // ローカル動画ファイル
+    newVideo.yt = '';
+    newVideo.unlisted = true; // 外部からはアクセス不可なのでlocalとして扱う
+    newVideo.localVideo = postVideoFileData; // base64
+    newVideo.title = titleInput || (postVideoFileName || 'ローカル動画') + (authorInput?' / '+authorInput:'');
+    // サムネがない場合はフィルムアイコン表示
+    if(!postCustomThumb) {
+      newVideo.localThumb = true;
+    }
+  }
   if(postCustomThumb) newVideo.customThumb = postCustomThumb;
   VIDEOS.unshift(newVideo);
   saveVideos();
@@ -2006,7 +2192,12 @@ function showPage(name) {
   if(name === 'post') { initPostPage(); }
   if(name === 'mypage') { renderMypage(); }
   if(name === 'member') { initMemberPage(); }
-  if(name !== 'player') document.getElementById('yt-player').src = '';
+  if(name !== 'player') {
+    document.getElementById('yt-player').src = '';
+    const lp = document.getElementById('local-player');
+    if(lp) { lp.pause(); lp.src = ''; lp.style.display = 'none'; }
+    document.getElementById('yt-player').style.display = '';
+  }
   window.scrollTo(0,0);
 }
 
@@ -2332,13 +2523,18 @@ function renderRanking() {
 
   const rankClasses = ['top1','top2','top3'];
   document.getElementById('ranking-list').innerHTML = ranked.map(({v, likes}, i) => {
-    const catIdx = parseInt(v.id.replace(/\D/g,''), 10) - 1;
-    const catThumb = CAT_THUMBS[((catIdx % CAT_THUMBS.length) + CAT_THUMBS.length) % CAT_THUMBS.length];
     const rankClass = i < 3 ? rankClasses[i] : '';
+    const thumbSrc = v.customThumb
+      ? v.customThumb
+      : v.unlisted
+        ? "data:image/svg+xml," + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='72' height='40'><rect width='72' height='40' fill='#0d1520'/><text x='36' y='26' text-anchor='middle' fill='#9acd32' font-size='18'>🔒</text></svg>")
+        : `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+    const fallbackSrc = `https://img.youtube.com/vi/${v.yt}/default.jpg`;
     return `<button class="ranking-item" onclick="playVideoFromRanking('${v.id}')">
       <span class="ranking-rank ${rankClass}">${i+1}</span>
-      <img class="ranking-thumb" src="${catThumb}" alt=""
-        style="width:72px;height:40px;object-fit:cover;border-radius:4px;flex-shrink:0;">
+      <img class="ranking-thumb" src="${thumbSrc}" alt=""
+        style="width:72px;height:40px;object-fit:cover;border-radius:4px;flex-shrink:0;background:#1a2535;"
+        onerror="if(!this._fb){this._fb=true;this.src='${fallbackSrc}';}">
       <div class="ranking-info">
         <div class="ranking-title">${escHtml(v.title)}</div>
         <div class="ranking-likes">♥ ${likes}</div>
