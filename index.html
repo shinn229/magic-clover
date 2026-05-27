@@ -527,6 +527,262 @@ nav {
 .member-save-bar { background: #fff; padding: 16px 28px 24px; border-radius: 0 0 12px 12px; border-top: 1px solid #eee; display: flex; gap: 12px; }
 .btn-member-save { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .btn-member-save:hover { background: var(--clover-dark); }
+/* ===== ADMIN ===== */
+.admin-bar {
+  display: none;
+  background: linear-gradient(90deg, #1a0a0a 0%, #2a1010 100%);
+  border-bottom: 2px solid #c02020;
+  padding: 8px 24px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.admin-bar.visible { display: flex; }
+.admin-bar-label {
+  color: #ff6060;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: rgba(192,32,32,0.2);
+  border: 1px solid #c02020;
+  border-radius: 4px;
+  padding: 3px 10px;
+}
+/* 動画カードの管理ボタン */
+.video-card-admin {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  gap: 4px;
+  z-index: 10;
+}
+.video-card-admin.visible { display: flex; }
+.admin-card-btn {
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.admin-card-btn.delete { border-color: #ff6060; color: #ff9090; }
+.admin-card-btn.delete:hover { background: rgba(192,32,32,0.7); color: #fff; }
+.admin-card-btn.edit { border-color: #9acd32; color: #c8f060; }
+.admin-card-btn.edit:hover { background: rgba(80,140,20,0.7); color: #fff; }
+/* プレイヤーの管理バー */
+.player-admin-bar {
+  display: none;
+  background: #1a0a0a;
+  border-top: 1px solid #c02020;
+  border-bottom: 1px solid #c02020;
+  padding: 10px 24px;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.player-admin-bar.visible { display: flex; }
+.player-admin-bar .admin-label {
+  font-size: 12px;
+  color: #ff6060;
+  font-weight: 700;
+  margin-right: 4px;
+}
+.btn-admin-delete {
+  background: #c02020;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-admin-delete:hover { background: #a01010; }
+.btn-admin-edit-title {
+  background: none;
+  color: #9acd32;
+  border: 1px solid #9acd32;
+  border-radius: 6px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-admin-edit-title:hover { background: rgba(154,205,50,0.1); }
+/* タグの削除ボタン（管理者用） */
+.player-tag-admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.player-tag-admin .tag-del {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a03000;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  font-weight: 900;
+}
+.player-tag-admin .tag-del:hover { color: #c02020; }
+/* 編集モーダル */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.modal-box h3 { font-size: 17px; font-weight: 700; color: #111; margin-bottom: 16px; }
+.modal-input {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  color: #111;
+  margin-bottom: 16px;
+}
+.modal-input:focus { border-color: var(--clover); }
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+.modal-btn-save { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 9px 22px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.modal-btn-cancel { background: none; border: 1px solid #ccc; border-radius: 6px; padding: 9px 18px; font-size: 14px; cursor: pointer; font-family: inherit; color: #666; }
+/* 総合編集モーダル */
+.modal-box-wide {
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+}
+.modal-section {
+  margin-bottom: 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.modal-section:last-of-type { border-bottom: none; margin-bottom: 0; }
+.modal-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.modal-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.modal-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+.modal-tag-chip .del-tag-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a03000;
+  font-size: 14px;
+  font-weight: 900;
+  padding: 0 0 0 3px;
+  line-height: 1;
+}
+.modal-tag-chip .del-tag-btn:hover { color: #c02020; }
+.modal-tag-add-row {
+  display: flex;
+  gap: 8px;
+}
+.modal-tag-input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+.modal-tag-input:focus { border-color: var(--clover); }
+.modal-tag-add-btn {
+  background: var(--clover);
+  color: #1a2a00;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.modal-yt-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.modal-yt-preview {
+  width: 96px;
+  height: 54px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #1a2535;
+}
+.modal-input-sm {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  color: #111;
+}
+/* 削除確認モーダル */
+.modal-btn-del { background: #c02020; color: #fff; border: none; border-radius: 6px; padding: 9px 22px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+.modal-warn { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 20px; }
 </style>
 </head>
 <body>
@@ -632,6 +888,11 @@ nav {
     <span id="filter-label"></span>
     <button onclick="clearFilters()">× 解除</button>
   </div>
+  <!-- 管理者バー -->
+  <div class="admin-bar" id="admin-bar">
+    <span class="admin-bar-label">🔧 管理者モード</span>
+    <span style="color:#ff9090;font-size:12px">動画カードの編集・削除ボタンが表示されています</span>
+  </div>
   <div class="pagination-wrap" id="pagination-top"></div>
   <div class="video-grid" id="video-grid"></div>
   <div class="pagination-wrap" id="pagination-bottom" style="background:#eef3e4;padding:14px 24px 20px;"></div>
@@ -645,6 +906,12 @@ nav {
   <div class="player-info">
     <h2 class="player-title" id="player-title-text"></h2>
     <div class="player-tags" id="player-tags"></div>
+    <!-- 管理者専用バー -->
+    <div class="player-admin-bar" id="player-admin-bar">
+      <span class="admin-label">🔧 管理者</span>
+      <button class="btn-admin-edit-title" onclick="openEditModal()">✏️ 動画を編集</button>
+      <button class="btn-admin-delete" onclick="openDeleteModal()">🗑️ 動画を削除</button>
+    </div>
     <div class="player-actions">
       <button class="action-btn" id="like-btn" onclick="toggleLike()">
         <span>♥</span><span id="like-label">いいね</span><span id="like-count" style="font-size:12px;color:#aaa;margin-left:2px"></span>
@@ -805,6 +1072,69 @@ nav {
   </div>
 </div>
 
+<!-- 総合編集モーダル -->
+<div class="modal-overlay" id="modal-edit-video">
+  <div class="modal-box-wide">
+    <h3 style="font-size:17px;font-weight:700;color:#111;margin-bottom:20px">✏️ 動画を編集</h3>
+
+    <!-- タイトル -->
+    <div class="modal-section">
+      <div class="modal-section-title">タイトル</div>
+      <input type="text" class="modal-input" id="edit-title-input" placeholder="タイトルを入力">
+    </div>
+
+    <!-- YouTube URL -->
+    <div class="modal-section">
+      <div class="modal-section-title">YouTube リンク</div>
+      <div class="modal-yt-row">
+        <img id="edit-yt-thumb" class="modal-yt-preview" src="" alt="サムネイル">
+        <div style="flex:1">
+          <input type="text" class="modal-input-sm" id="edit-yt-input"
+            placeholder="https://www.youtube.com/watch?v=..."
+            oninput="onEditYtInput(this.value)"
+            style="width:100%;margin-bottom:6px">
+          <div style="font-size:11px;color:#888">URLまたは動画IDを入力。変更するとサムネイルが更新されます。</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px">
+        <input type="checkbox" id="edit-unlisted" style="width:15px;height:15px;accent-color:#9acd32">
+        <label for="edit-unlisted" style="font-size:13px;color:#444;cursor:pointer">限定公開動画として扱う</label>
+      </div>
+    </div>
+
+    <!-- タグ -->
+    <div class="modal-section">
+      <div class="modal-section-title">タグ</div>
+      <div class="modal-tag-list" id="edit-tag-list"></div>
+      <div class="modal-tag-add-row">
+        <input type="text" class="modal-tag-input" id="edit-tag-input"
+          placeholder="タグを追加（Enterまたはカンマで区切る）"
+          onkeydown="onEditTagKeydown(event)"
+          oninput="onEditTagInput(this.value)">
+        <button class="modal-tag-add-btn" onclick="addEditTag()">追加</button>
+      </div>
+    </div>
+
+    <div class="modal-btns" style="padding-top:4px">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-edit-video')">キャンセル</button>
+      <button class="modal-btn-save" onclick="saveEditVideo()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 動画削除確認モーダル -->
+<div class="modal-overlay" id="modal-delete-video">
+  <div class="modal-box">
+    <h3>🗑️ 動画を削除</h3>
+    <p class="modal-warn" id="modal-delete-title-text"></p>
+    <p class="modal-warn" style="color:#c02020;font-weight:700">この操作は取り消せません。本当に削除しますか？</p>
+    <div class="modal-btns">
+      <button class="modal-btn-cancel" onclick="closeModal('modal-delete-video')">キャンセル</button>
+      <button class="modal-btn-del" onclick="confirmDeleteVideo()">削除する</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -819,7 +1149,63 @@ const TAB_TAGS = [
   ['パーム','アニバーサリーワルツ','スプレッド','フォールスカット']
 ];
 
-// サムネイル代替カラー（動画ごとの識別色）
+// 猫のサンプル画像（SVGインライン・CORS不要・確実表示）
+function makeCatSvg(bg, accent, n) {
+  // 猫の表情をnで変える（耳・目・口のバリエーション）
+  const ears = [
+    'M28,30 L20,10 L36,22z M72,30 L80,10 L64,22z',
+    'M26,32 L16,8 L38,24z M74,32 L84,8 L62,24z',
+    'M30,28 L22,6 L38,20z M70,28 L78,6 L62,20z',
+  ][n%3];
+  const eyes = [
+    `<ellipse cx="38" cy="52" rx="7" ry="8" fill="#222"/><ellipse cx="62" cy="52" rx="7" ry="8" fill="#222"/><circle cx="40" cy="50" r="2" fill="#fff"/><circle cx="64" cy="50" r="2" fill="#fff"/>`,
+    `<ellipse cx="38" cy="52" rx="5" ry="9" fill="#222"/><ellipse cx="62" cy="52" rx="5" ry="9" fill="#222"/><circle cx="39" cy="49" r="2" fill="#fff"/><circle cx="63" cy="49" r="2" fill="#fff"/>`,
+    `<ellipse cx="38" cy="52" rx="8" ry="6" fill="#222"/><ellipse cx="62" cy="52" rx="8" ry="6" fill="#222"/><circle cx="40" cy="51" r="2" fill="#fff"/><circle cx="64" cy="51" r="2" fill="#fff"/>`,
+  ][n%3];
+  const mouth = [
+    `<path d="M44,64 Q50,70 56,64" stroke="#555" stroke-width="2" fill="none"/>`,
+    `<path d="M44,62 Q50,68 56,62" stroke="#555" stroke-width="2" fill="none"/>`,
+    `<path d="M43,65 Q50,72 57,65" stroke="#555" stroke-width="2" fill="none"/>`,
+  ][n%3];
+  const whiskers = n%2===0
+    ? `<line x1="20" y1="60" x2="42" y2="62" stroke="#aaa" stroke-width="1.5"/>
+       <line x1="20" y1="65" x2="42" y2="65" stroke="#aaa" stroke-width="1.5"/>
+       <line x1="58" y1="62" x2="80" y2="60" stroke="#aaa" stroke-width="1.5"/>
+       <line x1="58" y1="65" x2="80" y2="65" stroke="#aaa" stroke-width="1.5"/>`
+    : `<line x1="18" y1="58" x2="42" y2="63" stroke="#aaa" stroke-width="1.5"/>
+       <line x1="18" y1="64" x2="42" y2="66" stroke="#aaa" stroke-width="1.5"/>
+       <line x1="58" y1="63" x2="82" y2="58" stroke="#aaa" stroke-width="1.5"/>
+       <line x1="58" y1="66" x2="82" y2="64" stroke="#aaa" stroke-width="1.5"/>`;
+  const tail = n%2===0
+    ? `<path d="M68,88 Q88,75 82,55" stroke="${accent}" stroke-width="5" fill="none" stroke-linecap="round"/>`
+    : `<path d="M65,90 Q90,80 85,58" stroke="${accent}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+    <rect width='100' height='100' fill='${bg}'/>
+    <path d='${ears}' fill='${accent}'/>
+    <ellipse cx='50' cy='62' rx='28' ry='26' fill='${accent}'/>
+    <ellipse cx='50' cy='56' rx='22' ry='20' fill='#f5e6d8'/>
+    ${eyes}
+    <ellipse cx="50" cy="60" rx="4" ry="3" fill="#e8a0a0"/>
+    ${mouth}
+    ${whiskers}
+    ${tail}
+  </svg>`;
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+const CAT_PALETTES = [
+  ['#f0e8d8','#c8946a'],['#e8f0f8','#7098c0'],['#f0f8e8','#6a9450'],
+  ['#f8e8f0','#c07898'],['#f8f0e0','#d4a050'],['#e8f8f8','#509898'],
+  ['#f0e8f8','#8870c0'],['#f8e8e0','#c87858'],['#e8f0e8','#70a060'],
+  ['#f8f0f8','#c068a8'],['#f0f8f0','#58a878'],['#f8f8e0','#b8a840'],
+  ['#e0f0f8','#4888b8'],['#f8e0f0','#c05888'],['#f0f8e0','#78b040'],
+  ['#f8e8f8','#a860b8'],['#e8f8e0','#68b050'],['#f0e0f8','#9058c0'],
+  ['#f8f0e0','#c09040'],['#e0f8f0','#40a888'],['#f8e0e0','#c04848'],
+  ['#e0e8f8','#5878c8'],['#f8f0f0','#c87878'],['#e8f8f8','#48a898'],
+  ['#f0f0f8','#7878c8'],['#f8f8f0','#a8a840'],['#e8e8f8','#8888c8'],
+];
+const CAT_THUMBS = CAT_PALETTES.map(([bg, accent], i) => makeCatSvg(bg, accent, i));
+// 後方互換用（thumbColorは使わなくなるが残す）
 const THUMB_COLORS = [
   '#1a3a5c','#2d1a5c','#1a4a2a','#4a1a1a','#1a3a4a',
   '#3a2a1a','#1a2a4a','#3a1a3a','#1a4a3a','#4a3a1a',
@@ -831,34 +1217,34 @@ const THUMB_COLORS = [
 
 // ===== VIDEOS =====
 let VIDEOS = [
-  { id:'v001', title:'2026 畢宿祭 1-1 扇子「銀の旋律」田島 葵 (アオイ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/扇子','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[0] },
-  { id:'v002', title:'2026 畢宿祭 1-2 カード「Shadow Play」木村 蒼汰 (ソウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[1] },
-  { id:'v003', title:'2026 畢宿祭 1-3 ハト「白夜」中川 莉奈 (リナ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ハト','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[2] },
-  { id:'v004', title:'2026 畢宿祭 1-4 ウォンド「Starfall」岡本 隼 (ハヤテ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ウォンド','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[3] },
-  { id:'v005', title:'2026 畢宿祭 1-5 マスク「Veil of Night」石川 朱莉 (ジュリ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/マスク','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[4] },
-  { id:'v006', title:'2026 畢宿祭 1-6 シンブル「Ripple」藤田 悠斗 (ユウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/シンブル','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[5] },
-  { id:'v007', title:'2026 畢宿祭 司会1-1 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[6] },
-  { id:'v008', title:'2026 畢宿祭 司会1-2 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[7] },
-  { id:'v009', title:'2026 畢宿祭 司会1-3 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[8] },
-  { id:'v010', title:'2026 畢宿祭 2-1 コイン「Coin Storm」村上 拓真 (タク)', date:'2026/05/16', tags:['2026','畢宿祭','演目/コイン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[9] },
-  { id:'v011', title:'2026 畢宿祭 2-2 リング「Eternal Loop」佐野 美緒 (ミオ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/リング','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[10] },
-  { id:'v012', title:'2026 畢宿祭 2-3 カード「Midnight」近藤 颯 (ソラ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[11] },
-  { id:'v013', title:'2025 学祭 A-1 ロープ「Knot Theory」西山 陸 (リク)', date:'2025/11/03', tags:['2025','学祭','演目/ロープ','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[12] },
-  { id:'v014', title:'2025 学祭 A-2 カード「Infinite」松岡 彩 (アヤ)', date:'2025/11/03', tags:['2025','学祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[13] },
-  { id:'v015', title:'2025 学祭 A-3 コイン「Lunar」大野 聖也 (セイ)', date:'2025/11/03', tags:['2025','学祭','演目/コイン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[14] },
-  { id:'v016', title:'2025 学祭 B-1 シルク「Aurora」三浦 凪 (ナギ)', date:'2025/11/03', tags:['2025','学祭','演目/シルク','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[15] },
-  { id:'v017', title:'2025 学祭 B-2 メンタル「Echo」橋本 詩音 (シオン)', date:'2025/11/03', tags:['2025','学祭','演目/メンタル','メンタル','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[16] },
-  { id:'v028', title:'2025 畢宿祭 1-1 メリケン「猫愛」野村 葵', date:'2025/05/18', tags:['2025','畢宿祭','演目/メリケン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:'#2a1a4a' },
-  { id:'v018', title:'2025 畢宿祭 1-1 扇子「春の夢」上田 結菜 (ユナ)', date:'2025/05/18', tags:['2025','畢宿祭','演目/扇子','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[17] },
-  { id:'v019', title:'2025 畢宿祭 1-2 カード「Phantom」小島 律 (リツ)', date:'2025/05/18', tags:['2025','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[18] },
-  { id:'v020', title:'2025 畢宿祭 1-3 コイン「Solstice」川口 蓮 (レン)', date:'2025/05/18', tags:['2025','畢宿祭','演目/コイン','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[19] },
-  { id:'v021', title:'2024 畢宿祭 1-1 リング「Orbit」長谷川 凌 (リョウ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/リング','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[20] },
-  { id:'v022', title:'2024 畢宿祭 1-2 カード「Dusk」永田 莉子 (リコ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/カード','カード','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[21] },
-  { id:'v023', title:'2024 畢宿祭 1-3 ウォンド「Spark」吉川 翔太 (ショウ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/ウォンド','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[22] },
-  { id:'v024', title:'2024 学祭 全体 Opening パフォーマンス', date:'2024/11/02', tags:['2024','学祭','オープニング','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[23] },
-  { id:'v025', title:'2026 畢宿祭 クロースアップ 早川 湊 (ミナト)', date:'2026/05/16', tags:['2026','畢宿祭','クロースアップ','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[24] },
-  { id:'v026', title:'2026 畢宿祭 クロースアップ 宮本 栞 (シオリ)', date:'2026/05/16', tags:['2026','畢宿祭','クロースアップ','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[25] },
-  { id:'v027', title:'2025 畢宿祭 司会 伊藤 南海 (ナミ)', date:'2025/05/18', tags:['2025','畢宿祭','司会','国際信州大学'], yt:'dQw4w9WgXcQ', unlisted:false, thumbColor:THUMB_COLORS[26] },
+  { id:'v001', title:'2026 畢宿祭 1-1 扇子「銀の旋律」田島 葵 (アオイ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/扇子','国際信州大学'], yt:'YCBEMQRIAxQ', unlisted:false, thumbColor:THUMB_COLORS[0] },
+  { id:'v002', title:'2026 畢宿祭 1-2 カード「Shadow Play」木村 蒼汰 (ソウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'FtWKhFHbFuU', unlisted:false, thumbColor:THUMB_COLORS[1] },
+  { id:'v003', title:'2026 畢宿祭 1-3 ハト「白夜」中川 莉奈 (リナ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ハト','国際信州大学'], yt:'JbCiHEZNxw0', unlisted:false, thumbColor:THUMB_COLORS[2] },
+  { id:'v004', title:'2026 畢宿祭 1-4 ウォンド「Starfall」岡本 隼 (ハヤテ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/ウォンド','国際信州大学'], yt:'OtpADzKqamo', unlisted:false, thumbColor:THUMB_COLORS[3] },
+  { id:'v005', title:'2026 畢宿祭 1-5 マスク「Veil of Night」石川 朱莉 (ジュリ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/マスク','国際信州大学'], yt:'hY7m5jjJ9mM', unlisted:false, thumbColor:THUMB_COLORS[4] },
+  { id:'v006', title:'2026 畢宿祭 1-6 シンブル「Ripple」藤田 悠斗 (ユウ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/シンブル','国際信州大学'], yt:'CJ9mNT0DEtY', unlisted:false, thumbColor:THUMB_COLORS[5] },
+  { id:'v007', title:'2026 畢宿祭 司会1-1 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'SRiSPOSMQVY', unlisted:false, thumbColor:THUMB_COLORS[6] },
+  { id:'v008', title:'2026 畢宿祭 司会1-2 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'PKffm2uI4dk', unlisted:false, thumbColor:THUMB_COLORS[7] },
+  { id:'v009', title:'2026 畢宿祭 司会1-3 青山 柚月', date:'2026/05/16', tags:['2026','畢宿祭','司会','国際信州大学'], yt:'Awf45u6zrP0', unlisted:false, thumbColor:THUMB_COLORS[8] },
+  { id:'v010', title:'2026 畢宿祭 2-1 コイン「Coin Storm」村上 拓真 (タク)', date:'2026/05/16', tags:['2026','畢宿祭','演目/コイン','国際信州大学'], yt:'nGeKSiCQkPw', unlisted:false, thumbColor:THUMB_COLORS[9] },
+  { id:'v011', title:'2026 畢宿祭 2-2 リング「Eternal Loop」佐野 美緒 (ミオ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/リング','国際信州大学'], yt:'W86cTIoMv2U', unlisted:false, thumbColor:THUMB_COLORS[10] },
+  { id:'v012', title:'2026 畢宿祭 2-3 カード「Midnight」近藤 颯 (ソラ)', date:'2026/05/16', tags:['2026','畢宿祭','演目/カード','カード','国際信州大学'], yt:'LizMiMNAB3s', unlisted:false, thumbColor:THUMB_COLORS[11] },
+  { id:'v013', title:'2025 学祭 A-1 ロープ「Knot Theory」西山 陸 (リク)', date:'2025/11/03', tags:['2025','学祭','演目/ロープ','国際信州大学'], yt:'QH2-TGUlwu4', unlisted:false, thumbColor:THUMB_COLORS[12] },
+  { id:'v014', title:'2025 学祭 A-2 カード「Infinite」松岡 彩 (アヤ)', date:'2025/11/03', tags:['2025','学祭','演目/カード','カード','国際信州大学'], yt:'wuSWqB8Bru4', unlisted:false, thumbColor:THUMB_COLORS[13] },
+  { id:'v015', title:'2025 学祭 A-3 コイン「Lunar」大野 聖也 (セイ)', date:'2025/11/03', tags:['2025','学祭','演目/コイン','国際信州大学'], yt:'HmZKgaHa3Fg', unlisted:false, thumbColor:THUMB_COLORS[14] },
+  { id:'v016', title:'2025 学祭 B-1 シルク「Aurora」三浦 凪 (ナギ)', date:'2025/11/03', tags:['2025','学祭','演目/シルク','国際信州大学'], yt:'vKPDxLnJj1g', unlisted:false, thumbColor:THUMB_COLORS[15] },
+  { id:'v017', title:'2025 学祭 B-2 メンタル「Echo」橋本 詩音 (シオン)', date:'2025/11/03', tags:['2025','学祭','演目/メンタル','メンタル','国際信州大学'], yt:'of6ARyMEuH8', unlisted:false, thumbColor:THUMB_COLORS[16] },
+  { id:'v028', title:'2025 畢宿祭 1-1 メリケン「猫愛」野村 葵', date:'2025/05/18', tags:['2025','畢宿祭','演目/メリケン','国際信州大学'], yt:'LizMiMNAB3s', unlisted:false, thumbColor:'#2a1a4a' },
+  { id:'v018', title:'2025 畢宿祭 1-1 扇子「春の夢」上田 結菜 (ユナ)', date:'2025/05/18', tags:['2025','畢宿祭','演目/扇子','国際信州大学'], yt:'AIbKfMVMEGY', unlisted:false, thumbColor:THUMB_COLORS[17] },
+  { id:'v019', title:'2025 畢宿祭 1-2 カード「Phantom」小島 律 (リツ)', date:'2025/05/18', tags:['2025','畢宿祭','演目/カード','カード','国際信州大学'], yt:'PmF2oGBFzXI', unlisted:false, thumbColor:THUMB_COLORS[18] },
+  { id:'v020', title:'2025 畢宿祭 1-3 コイン「Solstice」川口 蓮 (レン)', date:'2025/05/18', tags:['2025','畢宿祭','演目/コイン','国際信州大学'], yt:'dJe6-lgABNM', unlisted:false, thumbColor:THUMB_COLORS[19] },
+  { id:'v021', title:'2024 畢宿祭 1-1 リング「Orbit」長谷川 凌 (リョウ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/リング','国際信州大学'], yt:'X4bYbFDGKTU', unlisted:false, thumbColor:THUMB_COLORS[20] },
+  { id:'v022', title:'2024 畢宿祭 1-2 カード「Dusk」永田 莉子 (リコ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/カード','カード','国際信州大学'], yt:'iHtDOFzBBto', unlisted:false, thumbColor:THUMB_COLORS[21] },
+  { id:'v023', title:'2024 畢宿祭 1-3 ウォンド「Spark」吉川 翔太 (ショウ)', date:'2024/05/19', tags:['2024','畢宿祭','演目/ウォンド','国際信州大学'], yt:'bEqQT3Zmk0A', unlisted:false, thumbColor:THUMB_COLORS[22] },
+  { id:'v024', title:'2024 学祭 全体 Opening パフォーマンス', date:'2024/11/02', tags:['2024','学祭','オープニング','国際信州大学'], yt:'UiHi1YpBt08', unlisted:false, thumbColor:THUMB_COLORS[23] },
+  { id:'v025', title:'2026 畢宿祭 クロースアップ 早川 湊 (ミナト)', date:'2026/05/16', tags:['2026','畢宿祭','クロースアップ','国際信州大学'], yt:'wCJxJ2ND8pk', unlisted:false, thumbColor:THUMB_COLORS[24] },
+  { id:'v026', title:'2026 畢宿祭 クロースアップ 宮本 栞 (シオリ)', date:'2026/05/16', tags:['2026','畢宿祭','クロースアップ','国際信州大学'], yt:'tPEE9ZwImy0', unlisted:false, thumbColor:THUMB_COLORS[25] },
+  { id:'v027', title:'2025 畢宿祭 司会 伊藤 南海 (ナミ)', date:'2025/05/18', tags:['2025','畢宿祭','司会','国際信州大学'], yt:'LizMiMNAB3s', unlisted:false, thumbColor:THUMB_COLORS[26] },
 ];
 
 // ===== STATE & LOCALSTORAGE =====
@@ -890,6 +1276,7 @@ const PAGE_SIZE = 9;
 let currentPage = 1;
 let selectedTags = [];
 let loggedIn = false;
+let isAdmin = false;   // 管理者フラグ
 let canPost = true;
 let currentTab = 0;
 let currentVideoId = null;
@@ -897,6 +1284,10 @@ let currentVideoId = null;
 // ===== AUTH =====
 // ⚠️ デモ用認証。本番公開前にSupabase等のバックエンド認証に必ず移行すること
 const _AUTH = { e: 'a2VkZWt1cm9Ac2lrYTMuY29t', p: 'Zjl5M2s0azExY1pvOEt5' };
+// 管理者アカウント（複数登録可。メアドをbase64で記載）
+const _ADMINS = [
+  'a2VkZWt1cm9Ac2lrYTMuY29t', // kedekuro@sika3.com（デフォルト管理者）
+];
 function _chk(e, p) {
   try { return atob(_AUTH.e) === e && atob(_AUTH.p) === p; } catch(e) { return false; }
 }
@@ -908,7 +1299,6 @@ function doLogin() {
   const remember = document.getElementById('remember-me').checked;
   const errEl = document.getElementById('login-error');
   if(_chk(email, pass)) {
-    // 保存チェックがONなら資格情報をlocalStorageに保存
     if(remember) {
       try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass) })); } catch(e) {}
     } else {
@@ -916,8 +1306,12 @@ function doLogin() {
     }
     errEl.style.display = 'none';
     loggedIn = true;
+    // 管理者判定
+    isAdmin = _ADMINS.some(a => { try { return atob(a) === email; } catch(e) { return false; } });
     document.getElementById('nav-auth').style.display = 'flex';
     document.getElementById('nav-guest').style.display = 'none';
+    // 管理者バー表示切替
+    document.getElementById('admin-bar').classList.toggle('visible', isAdmin);
     closeDrawer();
     showPage('club');
   } else {
@@ -940,6 +1334,8 @@ function restoreSavedCred() {
 }
 function logout() {
   loggedIn = false;
+  isAdmin = false;
+  document.getElementById('admin-bar').classList.remove('visible');
   document.getElementById('nav-auth').style.display = 'none';
   document.getElementById('nav-guest').style.display = 'flex';
   closeDrawer();
@@ -1071,24 +1467,20 @@ function videoCard(v) {
   const tagsHtml = v.tags.map(t =>
     `<span class="video-tag" onclick="event.stopPropagation();toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`
   ).join('');
-  const color = v.thumbColor || '#1a2535';
-  const shortLabel = v.title.replace(/^\d{4}\s*(畢宿祭|学祭)\s*[\w\-]+\s*/, '').slice(0, 22);
-  const thumbSrc = `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
-  return `<div class="video-card" onclick="playVideo('${v.id}')">
-    <div class="video-thumb" style="position:relative;background:${color}">
-      <img src="${thumbSrc}" alt="${escHtml(v.title)}"
-        style="width:100%;height:100%;object-fit:cover;display:block"
-        onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-      <div class="thumb-fallback" style="display:none;position:absolute;inset:0;background:${color};flex-direction:column;justify-content:flex-end;">
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-          <div style="width:36px;height:36px;background:rgba(154,205,50,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-            <span style="color:rgba(154,205,50,0.85);font-size:14px;margin-left:2px">▶</span>
-          </div>
-        </div>
-        <div style="background:rgba(0,0,0,0.55);padding:5px 8px;">
-          <div style="color:#fff;font-size:10px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(shortLabel)}</div>
-        </div>
-      </div>
+  const catIdx = parseInt(v.id.replace(/\D/g,''), 10) - 1;
+  const catThumb = CAT_THUMBS[((catIdx % CAT_THUMBS.length) + CAT_THUMBS.length) % CAT_THUMBS.length];
+  const ytThumb = `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+  const adminBtns = isAdmin ? `
+    <div class="video-card-admin visible" onclick="event.stopPropagation()">
+      <button class="admin-card-btn edit" onclick="openEditModalById('${v.id}')">✏️</button>
+      <button class="admin-card-btn delete" onclick="openDeleteModalById('${v.id}')">🗑️</button>
+    </div>` : '';
+  // src に猫SVGを直接セット。YouTubeサムネイルは別途fetch試行
+  return `<div class="video-card" onclick="playVideo('${v.id}')" style="position:relative">
+    <div class="video-thumb" style="position:relative;background:#1a2535">
+      <img id="thumb-${v.id}" src="${catThumb}" alt="${escHtml(v.title)}"
+        style="width:100%;height:100%;object-fit:cover;display:block">
+      ${adminBtns}
     </div>
     <div class="video-info">
       <div class="video-title">${escHtml(v.title)}</div>
@@ -1128,9 +1520,14 @@ function playVideo(id) {
   currentVideoId = id;
   document.getElementById('player-title-text').textContent = v.title;
   document.getElementById('yt-player').src = `https://www.youtube.com/embed/${v.yt}?autoplay=1`;
-  document.getElementById('player-tags').innerHTML = v.tags.map(t=>
-    `<span class="player-tag" onclick="showPage('club');toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`
-  ).join('');
+  document.getElementById('player-tags').innerHTML = v.tags.map((t, i) => {
+    if(isAdmin) {
+      return `<span class="player-tag-admin">${escHtml(t)}<button class="tag-del" onclick="adminDeleteTag('${v.id}',${i})" title="このタグを削除">×</button></span>`;
+    }
+    return `<span class="player-tag" onclick="showPage('club');toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`;
+  }).join('');
+  // 管理者バー（プレイヤー）
+  document.getElementById('player-admin-bar').classList.toggle('visible', isAdmin);
   renderPlayerMeta(id);
   renderComments(id);
   showPage('player');
@@ -1344,6 +1741,7 @@ function submitVideo() {
   const dateStr = `${today.getFullYear()}/${String(today.getMonth()+1).padStart(2,'0')}/${String(today.getDate()).padStart(2,'0')}`;
   const title = titleInput || ('YouTube動画 ' + ytId + (authorInput?' / '+authorInput:''));
   VIDEOS.unshift({ id:'v'+String(VIDEOS.length+1).padStart(3,'0'), title, date:dateStr, tags:[...postTags], yt:ytId, unlisted, author:authorInput||null });
+  saveVideos();
   showToast('✓ 動画を投稿しました！');
   setTimeout(()=>showPage('club'), 1200);
 }
@@ -1490,6 +1888,184 @@ function getAvatarContent() {
   return userProfile.type==='emoji' ? userProfile.emoji : (userProfile.initial||'Me');
 }
 
+// ===== ADMIN FUNCTIONS =====
+const LS_VIDEOS_KEY = 'mc_videos';
+let editTags = []; // 編集中のタグ配列
+
+function saveVideos() {
+  try { localStorage.setItem(LS_VIDEOS_KEY, JSON.stringify(VIDEOS)); } catch(e) {}
+}
+function loadVideos() {
+  try {
+    const raw = localStorage.getItem(LS_VIDEOS_KEY);
+    if(raw) {
+      const saved = JSON.parse(raw);
+      if(Array.isArray(saved) && saved.length > 0) VIDEOS = saved;
+    }
+  } catch(e) {}
+}
+
+// ---- 総合編集モーダルを開く ----
+function openEditModalById(id) {
+  currentVideoId = id;
+  openEditModal();
+}
+function openEditModal() {
+  const v = VIDEOS.find(x => x.id === currentVideoId);
+  if(!v) return;
+
+  // タイトル
+  document.getElementById('edit-title-input').value = v.title;
+
+  // YouTube
+  document.getElementById('edit-yt-input').value = v.yt;
+  document.getElementById('edit-unlisted').checked = !!v.unlisted;
+  updateEditYtThumb(v.yt);
+
+  // タグ
+  editTags = [...(v.tags || [])];
+  renderEditTags();
+
+  document.getElementById('modal-edit-video').classList.add('open');
+}
+
+function updateEditYtThumb(ytId) {
+  const clean = extractEditYtId(ytId) || ytId;
+  const catIdx = parseInt((currentVideoId||'v1').replace(/\D/g,''), 10) - 1;
+  const catThumb = CAT_THUMBS[((catIdx % CAT_THUMBS.length) + CAT_THUMBS.length) % CAT_THUMBS.length];
+  const img = document.getElementById('edit-yt-thumb');
+  if(clean && clean.length === 11) {
+    img.src = `https://img.youtube.com/vi/${clean}/mqdefault.jpg`;
+    img.onerror = () => { img.src = catThumb; img.onerror = null; };
+  } else {
+    img.src = catThumb;
+  }
+}
+
+function extractEditYtId(val) {
+  if(!val) return null;
+  val = val.trim();
+  let m;
+  m = val.match(/[?&]v=([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  m = val.match(/youtu\.be\/([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  m = val.match(/embed\/([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  m = val.match(/shorts\/([A-Za-z0-9_-]{11})/); if(m) return m[1];
+  if(/^[A-Za-z0-9_-]{11}$/.test(val)) return val;
+  return null;
+}
+
+function onEditYtInput(val) {
+  updateEditYtThumb(val);
+}
+
+// ---- タグ編集 ----
+function renderEditTags() {
+  document.getElementById('edit-tag-list').innerHTML = editTags.map((t, i) =>
+    `<span class="modal-tag-chip">${escHtml(t)}
+      <button class="del-tag-btn" onclick="removeEditTag(${i})">×</button>
+    </span>`
+  ).join('');
+}
+function removeEditTag(idx) {
+  editTags.splice(idx, 1);
+  renderEditTags();
+}
+function addEditTag(val) {
+  const input = document.getElementById('edit-tag-input');
+  const raw = (val !== undefined ? val : input.value);
+  const tags = raw.split(/[,，]/).map(t => t.trim()).filter(t => t && !editTags.includes(t));
+  editTags.push(...tags);
+  input.value = '';
+  renderEditTags();
+}
+function onEditTagInput(val) {
+  if(val.includes(',') || val.includes('，')) {
+    addEditTag(val);
+    document.getElementById('edit-tag-input').value = '';
+  }
+}
+function onEditTagKeydown(e) {
+  if(e.key === 'Enter') { e.preventDefault(); addEditTag(); }
+  else if(e.key === ',') { e.preventDefault(); addEditTag(); }
+}
+
+// ---- 保存 ----
+function saveEditVideo() {
+  const v = VIDEOS.find(x => x.id === currentVideoId);
+  if(!v) return;
+
+  const newTitle = document.getElementById('edit-title-input').value.trim();
+  const ytRaw = document.getElementById('edit-yt-input').value.trim();
+  const newYt = extractEditYtId(ytRaw) || ytRaw;
+  const newUnlisted = document.getElementById('edit-unlisted').checked;
+
+  if(newTitle) v.title = newTitle;
+  if(newYt) v.yt = newYt;
+  v.unlisted = newUnlisted;
+  v.tags = [...editTags];
+
+  saveVideos();
+  closeModal('modal-edit-video');
+
+  // プレイヤー表示中なら即反映
+  if(document.getElementById('player-page').classList.contains('active')) {
+    document.getElementById('player-title-text').textContent = v.title;
+    document.getElementById('player-tags').innerHTML = v.tags.map((t, i) =>
+      isAdmin
+        ? `<span class="player-tag-admin">${escHtml(t)}<button class="tag-del" onclick="adminDeleteTag('${v.id}',${i})">×</button></span>`
+        : `<span class="player-tag" onclick="showPage('club');toggleTag('${escHtml(t)}')">${escHtml(t)}</span>`
+    ).join('');
+    // iframeのsrcも更新
+    if(newYt) document.getElementById('yt-player').src = `https://www.youtube.com/embed/${newYt}?autoplay=1`;
+  }
+
+  renderGrid();
+  renderTags();
+  showToast('✅ 動画情報を更新しました');
+}
+
+// ---- 削除 ----
+function openDeleteModalById(id) {
+  currentVideoId = id;
+  openDeleteModal();
+}
+function openDeleteModal() {
+  const v = VIDEOS.find(x => x.id === currentVideoId);
+  if(!v) return;
+  document.getElementById('modal-delete-title-text').textContent = `「${v.title}」を削除します。`;
+  document.getElementById('modal-delete-video').classList.add('open');
+}
+function confirmDeleteVideo() {
+  const idx = VIDEOS.findIndex(x => x.id === currentVideoId);
+  if(idx === -1) return;
+  VIDEOS.splice(idx, 1);
+  saveVideos();
+  closeModal('modal-delete-video');
+  showToast('🗑️ 動画を削除しました');
+  showPage('club');
+}
+
+// ---- タグ単体削除（プレイヤー画面） ----
+function adminDeleteTag(videoId, tagIndex) {
+  const v = VIDEOS.find(x => x.id === videoId);
+  if(!v) return;
+  const tagName = v.tags[tagIndex];
+  if(!confirm(`タグ「${tagName}」を削除しますか？`)) return;
+  v.tags.splice(tagIndex, 1);
+  saveVideos();
+  if(currentVideoId === videoId) {
+    document.getElementById('player-tags').innerHTML = v.tags.map((t, i) =>
+      `<span class="player-tag-admin">${escHtml(t)}<button class="tag-del" onclick="adminDeleteTag('${videoId}',${i})">×</button></span>`
+    ).join('');
+  }
+  renderTags();
+  showToast(`🏷️ タグ「${tagName}」を削除しました`);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
 // ===== RANKING =====
 function toggleRanking() {
   const panel = document.getElementById('ranking-panel');
@@ -1518,24 +2094,13 @@ function renderRanking() {
 
   const rankClasses = ['top1','top2','top3'];
   document.getElementById('ranking-list').innerHTML = ranked.map(({v, likes}, i) => {
-    const color = v.thumbColor || '#1a2535';
-    const shortLabel = v.title.replace(/^\d{4}\s*(畢宿祭|学祭)\s*[\w\-]+\s*/, '').slice(0, 16);
-    const thumbSrc = `https://img.youtube.com/vi/${v.yt}/mqdefault.jpg`;
+    const catIdx = parseInt(v.id.replace(/\D/g,''), 10) - 1;
+    const catThumb = CAT_THUMBS[((catIdx % CAT_THUMBS.length) + CAT_THUMBS.length) % CAT_THUMBS.length];
     const rankClass = i < 3 ? rankClasses[i] : '';
     return `<button class="ranking-item" onclick="playVideoFromRanking('${v.id}')">
       <span class="ranking-rank ${rankClass}">${i+1}</span>
-      <div style="width:72px;height:40px;flex-shrink:0;border-radius:4px;overflow:hidden;background:${color};position:relative;">
-        <img src="${thumbSrc}" alt="" style="width:100%;height:100%;object-fit:cover;display:block"
-          onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-        <div style="display:none;position:absolute;inset:0;background:${color};flex-direction:column;justify-content:flex-end;align-items:stretch;">
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;">
-            <span style="color:rgba(154,205,50,0.7);font-size:12px">▶</span>
-          </div>
-          <div style="background:rgba(0,0,0,0.5);padding:2px 4px;">
-            <div style="color:#fff;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:64px">${escHtml(shortLabel)}</div>
-          </div>
-        </div>
-      </div>
+      <img class="ranking-thumb" src="${catThumb}" alt=""
+        style="width:72px;height:40px;object-fit:cover;border-radius:4px;flex-shrink:0;">
       <div class="ranking-info">
         <div class="ranking-title">${escHtml(v.title)}</div>
         <div class="ranking-likes">♥ ${likes}</div>
@@ -1558,6 +2123,7 @@ function playVideoFromRanking(id) {
 // ===== INIT =====
 // localStorageからデータ復元
 loadMeta();
+loadVideos();
 restoreSavedCred();
 // 未ログイン状態でスタート
 document.getElementById('login-page').classList.add('active');
