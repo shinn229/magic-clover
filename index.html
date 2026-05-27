@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Magic Clover</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3CradialGradient id='g1' cx='40%25' cy='30%25' r='70%25'%3E%3Cstop offset='0%25' stop-color='%23ffe066'/%3E%3Cstop offset='40%25' stop-color='%23d4a017'/%3E%3Cstop offset='100%25' stop-color='%237a5200'/%3E%3C/radialGradient%3E%3CradialGradient id='g2' cx='60%25' cy='60%25' r='50%25'%3E%3Cstop offset='0%25' stop-color='%23fff0a0'/%3E%3Cstop offset='100%25' stop-color='%23c8920a'/%3E%3C/radialGradient%3E%3Cfilter id='sh'%3E%3CfeDropShadow dx='0' dy='1' stdDeviation='2' flood-color='%23000' flood-opacity='0.5'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='100' height='100' rx='18' fill='%230f1a08'/%3E%3Crect x='1' y='1' width='98' height='98' rx='17' fill='none' stroke='%23d4a017' stroke-width='2'/%3E%3Cg filter='url(%23sh)'%3E%3Ccircle cx='50' cy='34' r='21' fill='url(%23g1)'/%3E%3Ccircle cx='29' cy='58' r='21' fill='url(%23g1)'/%3E%3Ccircle cx='71' cy='58' r='21' fill='url(%23g1)'/%3E%3Crect x='44' y='60' width='12' height='22' rx='3' fill='url(%23g1)'/%3E%3Crect x='31' y='79' width='38' height='9' rx='4' fill='url(%23g1)'/%3E%3C/g%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -289,6 +290,7 @@ nav {
 /* ===== PAGES ===== */
 .page { display: none; }
 .page.active { display: block; }
+#register-page.active, #setpass-page.active { display: flex; }
 
 /* ===== LOGIN ===== */
 #login-page {
@@ -533,6 +535,24 @@ nav {
 .member-save-bar { background: #fff; padding: 16px 28px 24px; border-radius: 0 0 12px 12px; border-top: 1px solid #eee; display: flex; gap: 12px; }
 .btn-member-save { background: var(--clover); color: #1a2a00; border: none; border-radius: 6px; padding: 11px 28px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
 .btn-member-save:hover { background: var(--clover-dark); }
+
+/* ===== REGISTER BOX ===== */
+.register-box { background: #fff; padding: 36px 40px 40px; width: 100%; max-width: 480px; border-radius: 14px; border-top: 4px solid var(--clover); box-shadow: 0 12px 48px rgba(0,0,0,0.5); }
+.register-box h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 6px; }
+.register-box .sub { font-size: 13px; color: #777; margin-bottom: 22px; line-height: 1.7; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
+.reg-field { margin-bottom: 14px; }
+.reg-field label { display: block; font-size: 12px; font-weight: 700; color: #555; margin-bottom: 5px; letter-spacing: 0.3px; }
+.reg-field input, .reg-field select { width: 100%; border: 1.5px solid #ddd; border-radius: 7px; padding: 10px 13px; font-size: 14px; font-family: inherit; outline: none; color: #111; background: #fafafa; transition: border 0.15s, box-shadow 0.15s; box-sizing: border-box; }
+.reg-field input:focus, .reg-field select:focus { border-color: var(--clover); background: #fff; box-shadow: 0 0 0 3px rgba(154,205,50,0.12); }
+.reg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.btn-register { width: 100%; background: var(--clover); color: #1a2a00; border: none; border-radius: 8px; padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 6px; transition: background 0.15s, transform 0.1s; letter-spacing: 0.5px; }
+.btn-register:hover { background: var(--clover-dark); transform: translateY(-1px); }
+.btn-register:active { transform: translateY(0); }
+.btn-register:disabled { background: #ccc; color: #888; cursor: not-allowed; transform: none; }
+.reg-back { text-align: center; margin-top: 14px; font-size: 13px; color: #999; padding-top: 14px; border-top: 1px solid #f0f0f0; }
+.reg-back a { color: var(--clover-darker); cursor: pointer; font-weight: 700; text-decoration: underline; }
+.reg-back a:hover { opacity: 0.8; }
+
 /* ===== ADMIN ===== */
 .admin-bar {
   display: none;
@@ -800,6 +820,175 @@ nav {
   border: 1px solid #ddd;
 }
 .post-tag-preset:hover { background: var(--tag-bg); color: var(--tag-text); border-color: #c07800; }
+
+/* ===== NAV 管理者ボタン ===== */
+.nav-admin-btn {
+  background: rgba(192,32,32,0.15);
+  color: #ff8080;
+  border: 1px solid rgba(192,32,32,0.5);
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+  margin-left: 6px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-admin-btn:hover { background: rgba(192,32,32,0.28); border-color: #c02020; color: #ffaaaa; }
+
+/* バッジ（申請件数） */
+.nav-req-badge {
+  background: #e02020;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  line-height: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+/* ===== ADMIN PAGE ===== */
+#adminpage-page { background: #f5f7fa; min-height: calc(100vh - 64px); padding: 28px 20px; }
+.adminpage-container { max-width: 900px; margin: 0 auto; }
+.adminpage-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ff6060;
+  background: #1a0a0a;
+  padding: 18px 28px;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 3px solid #c02020;
+  font-family: 'Cinzel', serif;
+  letter-spacing: 1px;
+}
+.adminpage-section {
+  background: #fff;
+  margin-bottom: 24px;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+.adminpage-section + .adminpage-section {
+  border-radius: 12px;
+}
+.adminpage-section-header {
+  background: #f8f0f0;
+  border-bottom: 1px solid #f0d0d0;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #8a2020;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* テーブル */
+.req-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.req-table th {
+  background: #fafafa;
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  white-space: nowrap;
+}
+.req-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid #f5f5f5;
+  color: #333;
+  vertical-align: middle;
+}
+.req-table tr:last-child td { border-bottom: none; }
+.req-table tr:hover td { background: #fdf8f8; }
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #bbb;
+  font-size: 14px;
+}
+/* 操作ボタン */
+.btn-approve {
+  background: #e8f5e0;
+  color: #2a7020;
+  border: 1px solid #8acc60;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+.btn-approve:hover { background: #c8eab0; }
+.btn-reject {
+  background: #fff0f0;
+  color: #c02020;
+  border: 1px solid #f08080;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+  margin-right: 4px;
+}
+.btn-reject:hover { background: #ffe0e0; }
+.btn-revoke {
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-revoke:hover { background: #e0e0e0; }
+/* ステータスバッジ */
+.badge-status {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.badge-active   { background: #e8f5e0; color: #2a7020; border: 1px solid #8acc60; }
+.badge-approved { background: #fff8e0; color: #7a5200; border: 1px solid #d4a020; }
+.badge-rejected { background: #fff0f0; color: #c02020; border: 1px solid #f08080; }
+.badge-revoked  { background: #f0f0f0; color: #888;    border: 1px solid #ccc; }
+/* テーブルスクロール（スマホ） */
+#req-table-wrap, #member-table-wrap { overflow-x: auto; }
+@media (max-width: 600px) {
+  .req-table th, .req-table td { padding: 8px 10px; font-size: 12px; }
+}
 </style>
 </head>
 <body>
@@ -818,7 +1007,11 @@ nav {
       <a onclick="showPage('member')">会員</a>
       <a onclick="showPage('mypage')">マイページ</a>
     </div>
-    <button class="nav-post-btn" onclick="showPage('post')">＋ 投稿する</button>
+    <button class="nav-post-btn" id="nav-post-btn" onclick="showPage('post')">＋ 投稿する</button>
+    <button class="nav-admin-btn" id="nav-admin-btn" onclick="showPage('adminpage')" style="display:none">
+      🔧 管理者
+      <span class="nav-req-badge" id="nav-req-badge" style="display:none">0</span>
+    </button>
     <div class="nav-links">
       <a onclick="logout()" style="color:rgba(255,255,255,0.5);font-size:12px;">サインアウト</a>
     </div>
@@ -850,7 +1043,11 @@ nav {
   <a onclick="closeDrawer();showPage('member')">会員</a>
   <a onclick="closeDrawer();showPage('mypage')">マイページ</a>
   <hr class="drawer-divider">
-  <button class="drawer-post" onclick="closeDrawer();showPage('post')">＋ 投稿する</button>
+  <button class="drawer-post" onclick="closeDrawer();showPage('post')" id="drawer-post-btn">＋ 投稿する</button>
+  <button class="drawer-post drawer-admin-btn" id="drawer-admin-btn" onclick="closeDrawer();showPage('adminpage')" style="display:none;background:#c02020;color:#fff;margin-top:4px;position:relative">
+    🔧 管理者ページ
+    <span class="nav-req-badge" id="drawer-req-badge" style="display:none;position:absolute;top:6px;right:10px">0</span>
+  </button>
   <hr class="drawer-divider">
   <a onclick="closeDrawer();logout()" style="color:rgba(255,255,255,0.45);font-size:13px;">サインアウト</a>
 </div>
@@ -863,6 +1060,12 @@ nav {
 <div id="login-page" class="page">
   <div class="login-box">
     <h1>サインイン</h1>
+
+    <!-- 注意書き -->
+    <div style="background:#f0f7e0;border:1px solid rgba(154,205,50,0.4);border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:#3a5010;line-height:1.6;">
+      🍀 当サイトは<strong>国際信州大学奇術愛好会員専用</strong>です。<br>部外者の方のアクセスはご遠慮ください。
+    </div>
+
     <div class="login-field">
       <label>E-mail</label>
       <input type="email" id="login-email" placeholder="メールアドレス"
@@ -882,6 +1085,101 @@ nav {
     </div>
     <div id="login-error" style="display:none;background:#fff0f0;border:1px solid #f08080;border-radius:6px;padding:10px 14px;font-size:13px;color:#c02020;margin-top:8px;">
       メールアドレスまたはパスワードが正しくありません
+    </div>
+
+    <!-- 区切り線 + 申請リンク -->
+    <div style="border-top:1px solid #eee;margin-top:20px;padding-top:16px;">
+      <p style="font-size:12px;color:#888;text-align:center;margin-bottom:12px;">まだアカウントをお持ちでない会員の方</p>
+      <button onclick="showPage('register')"
+        style="width:100%;background:none;border:2px solid var(--clover);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(--clover-darker);cursor:pointer;font-family:inherit;transition:background 0.15s;"
+        onmouseover="this.style.background='rgba(154,205,50,0.08)'"
+        onmouseout="this.style.background='none'">
+        新規登録はこちら（会員申請）
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- REGISTER PAGE -->
+<div id="register-page" class="page" style="background:linear-gradient(135deg,#0f1a08 0%,#1a2410 100%);min-height:calc(100vh - 64px);align-items:center;justify-content:center;padding:40px 20px">
+  <div class="register-box">
+    <div id="reg-form-view">
+      <h1>🍀 会員登録申請</h1>
+      <p class="sub">申請後、管理者が確認・承認します。承認されるとメールでパスワード設定リンクが届きます。</p>
+      <div class="reg-field">
+        <label>メールアドレス <span style="color:#e03030;font-size:11px">※必須</span></label>
+        <input type="email" id="reg-email" placeholder="example@mail.com">
+      </div>
+      <div class="reg-field">
+        <label>お名前 <span style="color:#e03030;font-size:11px">※必須</span></label>
+        <input type="text" id="reg-name" placeholder="山田 太郎">
+      </div>
+      <div class="reg-row">
+        <div class="reg-field">
+          <label>期 <span style="color:#e03030;font-size:11px">※必須</span></label>
+          <input type="text" id="reg-generation" placeholder="例: 25期">
+        </div>
+        <div class="reg-field">
+          <label>大学学年 <span style="color:#e03030;font-size:11px">※必須</span></label>
+          <select id="reg-grade">
+            <option value="">選択してください</option>
+            <option value="1年">1年</option>
+            <option value="2年">2年</option>
+            <option value="3年">3年</option>
+            <option value="4年">4年</option>
+            <option value="院1年">院1年</option>
+            <option value="院2年">院2年</option>
+            <option value="OB/OG">OB/OG</option>
+          </select>
+        </div>
+      </div>
+      <div id="reg-error" style="display:none;background:#fff0f0;border:1px solid #f08080;border-radius:6px;padding:10px 14px;font-size:13px;color:#c02020;margin-bottom:12px;"></div>
+      <button class="btn-register" id="reg-submit-btn" onclick="submitRegistration()">申請する</button>
+      <div class="reg-back">すでにアカウントをお持ちの方は <a onclick="showPage('login')">こちらからサインイン</a></div>
+    </div>
+    <div id="reg-success-view" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:52px;margin-bottom:12px">📬</div>
+      <h2 style="font-size:18px;font-weight:700;color:#111;margin-bottom:8px">申請を受け付けました</h2>
+      <p style="font-size:14px;color:#555;line-height:1.7">管理者が確認後、承認されると登録されたメールアドレスに<br>パスワード設定のご案内をお送りします。<br>しばらくお待ちください。</p>
+      <button onclick="showPage('login')" style="margin-top:24px;background:var(--clover);color:#1a2a00;border:none;border-radius:8px;padding:12px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">サインイン画面へ戻る</button>
+    </div>
+  </div>
+</div>
+
+<!-- SET PASSWORD PAGE -->
+<div id="setpass-page" class="page" style="background:linear-gradient(135deg,#0f1a08 0%,#1a2410 100%);min-height:calc(100vh - 64px);align-items:center;justify-content:center;padding:40px 20px">
+  <div class="login-box">
+    <h1>🔑 パスワード設定</h1>
+    <p style="font-size:13px;color:#666;margin-bottom:20px;line-height:1.6">承認されました！パスワードを設定してください。</p>
+    <div id="setpass-email-display" style="background:#f5f5f5;border-radius:6px;padding:10px 14px;font-size:13px;color:#555;margin-bottom:16px;"></div>
+    <div class="login-field">
+      <label>新しいパスワード（8文字以上）</label>
+      <input type="password" id="setpass-pass1" placeholder="パスワード" oninput="validateSetPass()">
+    </div>
+    <div class="login-field">
+      <label>パスワード（確認）</label>
+      <input type="password" id="setpass-pass2" placeholder="パスワード（確認）" oninput="validateSetPass()">
+    </div>
+    <div id="setpass-error" style="display:none;background:#fff0f0;border:1px solid #f08080;border-radius:6px;padding:10px 14px;font-size:13px;color:#c02020;margin-bottom:12px;"></div>
+    <button class="btn-primary" id="setpass-btn" onclick="doSetPassword()" style="width:100%;padding:12px;font-size:15px;" disabled>パスワードを設定してログイン</button>
+  </div>
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="adminpage-page" class="page">
+  <div class="adminpage-container">
+    <div class="adminpage-title">🔧 管理者ページ</div>
+    <div class="adminpage-section">
+      <div class="adminpage-section-header">
+        📋 会員申請一覧
+        <span id="pending-count-label" style="margin-left:8px;background:rgba(154,205,50,0.2);border-radius:10px;padding:2px 10px;font-size:12px"></span>
+      </div>
+      <div id="req-table-wrap"><div class="empty-state">読み込み中...</div></div>
+    </div>
+    <div class="adminpage-section">
+      <div class="adminpage-section-header">👥 会員一覧</div>
+      <div id="member-table-wrap"><div class="empty-state">読み込み中...</div></div>
     </div>
   </div>
 </div>
@@ -1231,7 +1529,7 @@ nav {
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
-    getFirestore, doc, setDoc, getDoc
+    getFirestore, doc, setDoc, getDoc, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -1246,82 +1544,141 @@ nav {
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // ---------- 動画データをFirestoreに保存 ----------
+  // ---------- 保存系（変更なし） ----------
   window._fbSaveVideos = async function(videos) {
-    try {
-      await setDoc(doc(db, "mc_data", "videos"), { list: videos });
-    } catch(e) {
-      console.error("[Firebase] saveVideos エラー:", e);
-    }
+    try { await setDoc(doc(db, "mc_data", "videos"), { list: videos }); }
+    catch(e) { console.error("[Firebase] saveVideos エラー:", e); }
   };
-
-  // ---------- 動画データをFirestoreから読み込む ----------
-  window._fbLoadVideos = async function() {
-    try {
-      const snap = await getDoc(doc(db, "mc_data", "videos"));
-      if (snap.exists()) {
-        const saved = snap.data().list;
-        if (Array.isArray(saved) && saved.length > 0) return saved;
-      }
-    } catch(e) {
-      console.error("[Firebase] loadVideos エラー:", e);
-    }
-    return null; // 失敗 or データなし → ローカルのデフォルト動画を使う
-  };
-
-  // ---------- videoMeta を Firestore に保存 ----------
   window._fbSaveMeta = async function(meta) {
-    try {
-      await setDoc(doc(db, "mc_data", "meta"), { data: meta });
-    } catch(e) {
-      console.error("[Firebase] saveMeta エラー:", e);
-    }
+    try { await setDoc(doc(db, "mc_data", "meta"), { data: meta }); }
+    catch(e) { console.error("[Firebase] saveMeta エラー:", e); }
   };
-
-  // ---------- videoMeta を Firestore から読み込む ----------
-  window._fbLoadMeta = async function() {
-    try {
-      const snap = await getDoc(doc(db, "mc_data", "meta"));
-      if (snap.exists()) return snap.data().data || {};
-    } catch(e) {
-      console.error("[Firebase] loadMeta エラー:", e);
-    }
-    return null;
-  };
-
-  // ---------- タグマスターを Firestore に保存 ----------
   window._fbSaveTabTags = async function(tags) {
-    try {
-      await setDoc(doc(db, "mc_data", "tabTags"), { data: tags });
-    } catch(e) {
-      console.error("[Firebase] saveTabTags エラー:", e);
-    }
+    try { await setDoc(doc(db, "mc_data", "tabTags"), { data: tags }); }
+    catch(e) { console.error("[Firebase] saveTabTags エラー:", e); }
   };
 
-  // ---------- タグマスターを Firestore から読み込む ----------
-  window._fbLoadTabTags = async function() {
+  // ---------- 初期データを1回読み込む ----------
+  async function loadOnce(docId) {
     try {
-      const snap = await getDoc(doc(db, "mc_data", "tabTags"));
-      if (snap.exists()) return snap.data().data || null;
-    } catch(e) {
-      console.error("[Firebase] loadTabTags エラー:", e);
-    }
-    return null;
-  };
+      const snap = await getDoc(doc(db, "mc_data", docId));
+      return snap.exists() ? snap.data() : null;
+    } catch(e) { return null; }
+  }
 
-  // ---------- 初期化トリガー ----------
-  // videos / meta / tabTags を並列ロードしてから起動する
-  Promise.all([
-    window._fbLoadVideos(),
-    window._fbLoadMeta(),
-    window._fbLoadTabTags(),
-  ]).then(([savedVideos, savedMeta, savedTabTags]) => {
-    // 動画データ
-    if (savedVideos) {
-      savedVideos.forEach(v => {
+  // ---------- リアルタイムリスナー: videos ----------
+  // アプリ起動後に別端末で投稿・削除・編集されたらグリッドを即時更新する
+  function startVideosListener() {
+    onSnapshot(doc(db, "mc_data", "videos"), (snap) => {
+      if (!snap.exists()) return;
+      const list = snap.data().list;
+      if (!Array.isArray(list) || list.length === 0) return;
+      // 自分が今まさに保存中の書き込みは無視（_fbSaveVideos直後の自己反響）
+      // → VIDEOS と完全一致なら再描画しない
+      const incoming = JSON.stringify(list);
+      if (incoming === JSON.stringify(window.VIDEOS)) return;
+      list.forEach(v => {
         if (v.customThumb && v.customThumb.includes('svg')) delete v.customThumb;
       });
-      window.VIDEOS = savedVideos;
+      window.VIDEOS = list;
+      // アプリ初期化済みならグリッドを再描画
+      if (window._appInitDone) {
+        if (typeof renderGrid === 'function') renderGrid();
+        if (typeof renderTags === 'function') renderTags();
+        // ランキングパネルが開いていれば更新
+        const panel = document.getElementById('ranking-panel');
+        if (panel && panel.classList.contains('open') && typeof renderRanking === 'function') renderRanking();
+        // トーストで通知（自分の投稿直後は出さない）
+        if (window._skipNextVideoToast) {
+          window._skipNextVideoToast = false;
+        } else {
+          if (typeof showToast === 'function') showToast('🔄 動画リストが更新されました');
+        }
+      }
+    }, (e) => { console.error("[Firebase] videos リスナーエラー:", e); });
+  }
+
+  // ---------- リアルタイムリスナー: meta ----------
+  function startMetaListener() {
+    onSnapshot(doc(db, "mc_data", "meta"), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data().data;
+      if (!data || typeof data !== 'object') return;
+      // 自己反響は無視
+      if (JSON.stringify(data) === JSON.stringify(window.videoMeta)) return;
+      window.videoMeta = data;
+      if (window._appInitDone) {
+        // プレイヤー画面を開いていれば即反映
+        if (typeof renderPlayerMeta === 'function' && window.currentVideoId) {
+          renderPlayerMeta(window.currentVideoId);
+        }
+        if (typeof renderGrid === 'function') renderGrid();
+      }
+    }, (e) => { console.error("[Firebase] meta リスナーエラー:", e); });
+  }
+
+  // ---------- リアルタイムリスナー: tabTags ----------
+  function startTabTagsListener() {
+    onSnapshot(doc(db, "mc_data", "tabTags"), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data().data;
+      if (!Array.isArray(data)) return;
+      if (JSON.stringify(data) === JSON.stringify(window.TAB_TAGS)) return;
+      for (let i = 0; i < 4; i++) { if (data[i]) window.TAB_TAGS[i] = data[i]; }
+      if (window._appInitDone && typeof renderTags === 'function') renderTags();
+    }, (e) => { console.error("[Firebase] tabTags リスナーエラー:", e); });
+  }
+
+  // ---------- ユーザーデータ保存 ----------
+  window._fbSaveUsersSummary = async function(users) {
+    try {
+      await setDoc(doc(db, "mc_data", "users"), { data: users });
+      window._fbUsersCache = users;
+    } catch(e) {
+      console.error("[Firebase] saveUsers エラー:", e);
+      throw e;
+    }
+  };
+
+  // ---------- ユーザーデータ1回読み込み（トークン検証用） ----------
+  window._fbLoadUsersOnce = async function() {
+    try {
+      const snap = await getDoc(doc(db, "mc_data", "users"));
+      return snap.exists() ? snap.data().data : null;
+    } catch(e) { return null; }
+  };
+
+  // ---------- リアルタイムリスナー: users ----------
+  function startUsersListener() {
+    onSnapshot(doc(db, "mc_data", "users"), (snap) => {
+      if (!snap.exists()) return;
+      const data = snap.data().data;
+      if (!data || typeof data !== 'object') return;
+      window._fbUsersCache = data;
+      if (window._appInitDone) {
+        if (typeof updateReqBadge === 'function') updateReqBadge();
+        // 管理者ページが開いていれば再描画
+        const adminPage = document.getElementById('adminpage-page');
+        if (adminPage && adminPage.classList.contains('active') && typeof refreshAdminPage === 'function') {
+          refreshAdminPage();
+        }
+      }
+    }, (e) => { console.error("[Firebase] users リスナーエラー:", e); });
+  }
+
+  // ---------- 初期化: 最初の1回だけ読み込んでからアプリ起動、その後リスナー開始 ----------
+  Promise.all([
+    loadOnce("videos"),
+    loadOnce("meta"),
+    loadOnce("tabTags"),
+    loadOnce("users"),
+  ]).then(([vSnap, mSnap, tSnap, uSnap]) => {
+    // 動画
+    if (vSnap && Array.isArray(vSnap.list) && vSnap.list.length > 0) {
+      vSnap.list.forEach(v => {
+        if (v.customThumb && v.customThumb.includes('svg')) delete v.customThumb;
+      });
+      window.VIDEOS = vSnap.list;
     } else {
       try {
         const raw = localStorage.getItem('mc_videos');
@@ -1331,26 +1688,35 @@ nav {
         }
       } catch(e) {}
     }
-    // いいね・コメント・保存メタ
-    if (savedMeta && typeof savedMeta === 'object') {
-      window._fbInitMeta = savedMeta;
-    }
-    // タグマスター
-    if (savedTabTags && Array.isArray(savedTabTags)) {
-      window._fbInitTabTags = savedTabTags;
-    }
+    // meta
+    if (mSnap && mSnap.data) window._fbInitMeta = mSnap.data;
+    // tabTags
+    if (tSnap && Array.isArray(tSnap.data)) window._fbInitTabTags = tSnap.data;
+    // users
+    if (uSnap && uSnap.data) window._fbUsersCache = uSnap.data;
+
+    // アプリ起動
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', window._appInit);
     } else {
       window._appInit();
     }
+
+    // リアルタイムリスナー開始（初回読み込み完了後）
+    startVideosListener();
+    startMetaListener();
+    startTabTagsListener();
+    startUsersListener();
   });
 </script>
 
 <script>
 // ===== TAG TAXONOMY =====
 // TAB_TAGS[0]=演目, [1]=団体, [2]=技法, [3]=その他
-const TAB_TAGS = [
+// ★ 実データはFirebase（mc_data/tabTags）から読み込まれる。
+// ★ Firebaseにデータがない場合のみ下記フォールバックが使われる。
+// ★ タグの追加・削除は管理者ページの「タグ管理」から行うこと（ここを書き換えてはいけない）。
+const TAB_TAGS_FALLBACK = [
   ['2026','2025','2024','畢宿祭','学祭','スポンジ','カード','メンタル',
    '演目/扇子','演目/カード','演目/ハト','演目/ウォンド','演目/マスク','演目/シンブル',
    '演目/コイン','演目/リング','演目/ロープ','演目/シルク','演目/メンタル','演目/メリケン',
@@ -1359,6 +1725,7 @@ const TAB_TAGS = [
   ['パーム','アニバーサリーワルツ','スプレッド','フォールスカット'],
   []
 ];
+const TAB_TAGS = [[], [], [], []];
 
 // 猫のサンプル画像（SVGインライン・CORS不要・確実表示）
 function makeCatSvg(bg, accent, n) {
@@ -1500,9 +1867,11 @@ let currentPage = 1;
 let selectedTags = [];
 let loggedIn = false;
 let isAdmin = false;   // 管理者フラグ
-let canPost = true;
+let canPost = false;
 let currentTab = 0;
 let currentVideoId = null;
+let currentUserEmail = '';
+let currentUserData = null;
 let currentSort = 'popular'; // popular | newest | oldest
 
 // ===== AUTH =====
@@ -1519,57 +1888,106 @@ const LS_CRED_KEY = 'mc_savedCred';
 
 const SESSION_EXPIRE_MS = 60 * 60 * 1000; // 1時間
 
-function _applyLogin(email) {
+function _applyLogin(email, userData) {
   loggedIn = true;
+  currentUserEmail = email;
+  currentUserData = userData || null;
   isAdmin = _ADMINS.some(a => { try { return atob(a) === email; } catch(e) { return false; } });
+  // 投稿権限: 管理者 or userDataのcanPostがtrue
+  canPost = isAdmin || (userData && userData.canPost === true);
   document.getElementById('nav-auth').style.display = 'flex';
   document.getElementById('nav-guest').style.display = 'none';
   document.getElementById('admin-bar').classList.toggle('visible', isAdmin);
+  // 投稿ボタン表示制御
+  const postBtn = document.getElementById('nav-post-btn');
+  const drawerPost = document.getElementById('drawer-post-btn');
+  if(postBtn) postBtn.style.display = canPost ? '' : 'none';
+  if(drawerPost) drawerPost.style.display = canPost ? '' : 'none';
+  // 管理者ページボタン
+  const adminBtn = document.getElementById('nav-admin-btn');
+  const drawerAdmin = document.getElementById('drawer-admin-btn');
+  if(adminBtn) adminBtn.style.display = isAdmin ? '' : 'none';
+  if(drawerAdmin) drawerAdmin.style.display = isAdmin ? '' : 'none';
+  if(isAdmin) updateReqBadge();
 }
 
-function doLogin() {
+async function doLogin() {
   const email = (document.getElementById('login-email').value || '').trim();
   const pass = document.getElementById('login-pass').value || '';
   const remember = document.getElementById('remember-me').checked;
   const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  // 管理者チェック
   if(_chk(email, pass)) {
-    // セッション情報を保存（remember=trueなら期限なし、falseなら1時間）
     const expiry = remember ? null : Date.now() + SESSION_EXPIRE_MS;
-    try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass), expiry, remember })); } catch(e) {}
-    errEl.style.display = 'none';
-    _applyLogin(email);
+    try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass), expiry, remember, isAdmin: true })); } catch(e) {}
+    _applyLogin(email, null);
     closeDrawer();
     showPage('club');
-  } else {
-    errEl.style.display = 'block';
-    document.getElementById('login-pass').value = '';
-    document.getElementById('login-pass').focus();
+    return;
   }
+
+  // 一般ユーザーチェック（Firestoreのユーザーキャッシュを使用）
+  const users = window._fbUsersCache || {};
+  const key = email.replace(/[.@]/g,'_');
+  const user = users[key];
+  if(user && user.status === 'active' && user.passHash) {
+    // パスワード照合（SHA-256ハッシュ）
+    const inputHash = await sha256(pass);
+    if(inputHash === user.passHash) {
+      const expiry = remember ? null : Date.now() + SESSION_EXPIRE_MS;
+      try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(email), p: btoa(pass), expiry, remember, isAdmin: false })); } catch(e) {}
+      _applyLogin(email, user);
+      closeDrawer();
+      showPage('club');
+      return;
+    }
+  }
+
+  errEl.style.display = 'block';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-pass').focus();
+}
+
+// SHA-256ハッシュ（パスワード照合用）
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // 保存済みセッションで自動ログイン（1時間以内 or remember=true）
-// 戻り値: true=自動ログイン成功, false=ログイン画面を表示
-function tryAutoLogin() {
+async function tryAutoLogin() {
   try {
     const raw = localStorage.getItem(LS_CRED_KEY);
     if(!raw) return false;
     const saved = JSON.parse(raw);
     if(!saved.e || !saved.p) return false;
     const email = atob(saved.e), pass = atob(saved.p);
-    // 期限チェック: remember=trueなら無期限, それ以外は expiry を確認
     if(!saved.remember && saved.expiry && Date.now() > saved.expiry) {
       localStorage.removeItem(LS_CRED_KEY);
       return false;
     }
-    // 資格情報が正しければ自動ログイン
-    if(_chk(email, pass)) {
-      // セッション期限を更新（remember=falseなら毎回リセット）
-      if(!saved.remember) {
-        saved.expiry = Date.now() + SESSION_EXPIRE_MS;
-        try { localStorage.setItem(LS_CRED_KEY, JSON.stringify(saved)); } catch(e) {}
-      }
-      _applyLogin(email);
+    // 管理者
+    if(saved.isAdmin && _chk(email, pass)) {
+      if(!saved.remember) { saved.expiry = Date.now() + SESSION_EXPIRE_MS; try { localStorage.setItem(LS_CRED_KEY, JSON.stringify(saved)); } catch(e) {} }
+      _applyLogin(email, null);
       return true;
+    }
+    // 一般ユーザー
+    if(!saved.isAdmin) {
+      const users = window._fbUsersCache || {};
+      const user = users[email.replace(/[.@]/g,'_')];
+      if(user && user.status === 'active' && user.passHash) {
+        const inputHash = await sha256(pass);
+        if(inputHash === user.passHash) {
+          if(!saved.remember) { saved.expiry = Date.now() + SESSION_EXPIRE_MS; try { localStorage.setItem(LS_CRED_KEY, JSON.stringify(saved)); } catch(e) {} }
+          _applyLogin(email, user);
+          return true;
+        }
+      }
     }
   } catch(e) {}
   return false;
@@ -1577,9 +1995,19 @@ function tryAutoLogin() {
 function logout() {
   loggedIn = false;
   isAdmin = false;
-  // セッションを完全削除
+  canPost = false;
+  currentUserEmail = '';
+  currentUserData = null;
   try { localStorage.removeItem(LS_CRED_KEY); } catch(e) {}
   document.getElementById('admin-bar').classList.remove('visible');
+  const postBtn = document.getElementById('nav-post-btn');
+  const adminBtn = document.getElementById('nav-admin-btn');
+  const drawerPost = document.getElementById('drawer-post-btn');
+  const drawerAdmin = document.getElementById('drawer-admin-btn');
+  if(postBtn) postBtn.style.display = 'none';
+  if(adminBtn) adminBtn.style.display = 'none';
+  if(drawerPost) drawerPost.style.display = 'none';
+  if(drawerAdmin) drawerAdmin.style.display = 'none';
   document.getElementById('nav-auth').style.display = 'none';
   document.getElementById('nav-guest').style.display = 'flex';
   closeDrawer();
@@ -2144,20 +2572,24 @@ function addTagFromSection(si) {
 const LS_TAB_TAGS_KEY = 'mc_tabTags';
 function loadTabTags() {
   try {
-    // Firebase ESMモジュールが先にロードしたデータがあれば使う
+    // Firebase ESMモジュールが先にロードしたデータがあれば使う（最優先）
     if (window._fbInitTabTags && Array.isArray(window._fbInitTabTags)) {
       const saved = window._fbInitTabTags;
       for(let i = 0; i < 4; i++) { if(saved[i]) TAB_TAGS[i] = saved[i]; }
       return;
     }
-    // フォールバック: localStorage
+    // フォールバック①: localStorage
     const raw = localStorage.getItem(LS_TAB_TAGS_KEY);
     if(raw) {
       const saved = JSON.parse(raw);
       if(Array.isArray(saved)) {
-        for(let i = 0; i < 4; i++) { if(saved[i]) TAB_TAGS[i] = saved[i]; }
+        for(let i = 0; i < 4; i++) { if(saved[i] && saved[i].length > 0) TAB_TAGS[i] = saved[i]; }
+        // localStorageに有効なデータがあればそれを使う
+        if(TAB_TAGS.some(t => t.length > 0)) return;
       }
     }
+    // フォールバック②: ハードコード初期値（Firebaseもlocalも空のとき＝初回のみ）
+    for(let i = 0; i < 4; i++) { TAB_TAGS[i] = [...TAB_TAGS_FALLBACK[i]]; }
   } catch(e) {}
 }
 function saveTabTags() {
@@ -2275,6 +2707,14 @@ function showPage(name) {
   if(name === 'post') { initPostPage(); }
   if(name === 'mypage') { renderMypage(); }
   if(name === 'member') { initMemberPage(); }
+  if(name === 'adminpage') { refreshAdminPage(); }
+  if(name === 'register') {
+    document.getElementById('reg-form-view').style.display = 'block';
+    document.getElementById('reg-success-view').style.display = 'none';
+    document.getElementById('reg-error').style.display = 'none';
+    ['reg-email','reg-name','reg-generation'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    const gr = document.getElementById('reg-grade'); if(gr) gr.value = '';
+  }
   if(name !== 'player') {
     document.getElementById('yt-player').src = '';
     const lp = document.getElementById('local-player');
@@ -2417,10 +2857,18 @@ let editTags = []; // 編集中のタグ配列
 // saveVideos: Firestore + localStorage（バックアップ）に保存
 function saveVideos() {
   // Firestoreへ保存（非同期・エラーは握り潰す）
+  // ※自分の投稿がリスナーで跳ね返ってきたときにトーストが出ないようフラグをセット
   if (typeof window._fbSaveVideos === 'function') {
-    window._fbSaveVideos(VIDEOS);
+    window._skipNextVideoToast = true;
+    // localVideo（base64動画）はFirestoreの1MB上限を超えるため除外して保存
+    const videosForFirestore = VIDEOS.map(v => {
+      if(!v.localVideo) return v;
+      const { localVideo, ...rest } = v;
+      return rest; // localVideoだけ取り除いたコピーを保存
+    });
+    window._fbSaveVideos(videosForFirestore);
   }
-  // ローカルにもバックアップ
+  // ローカルにもバックアップ（localVideoはlocalStorageにのみ保存）
   try { localStorage.setItem(LS_VIDEOS_KEY, JSON.stringify(VIDEOS)); } catch(e) {}
 }
 // loadVideos: Firebase モジュール側で起動前に処理済みのため、ここでは何もしない
@@ -2592,6 +3040,11 @@ function closeModal(id) {
 
 // ===== RANKING =====
 function toggleRanking() {
+  if(!loggedIn) {
+    showToast('🔒 ランキングを見るにはサインインが必要です');
+    showPage('login');
+    return;
+  }
   const panel = document.getElementById('ranking-panel');
   const overlay = document.getElementById('ranking-overlay');
   if(panel.classList.contains('open')) {
@@ -2649,12 +3102,339 @@ function playVideoFromRanking(id) {
   playVideo(id);
 }
 
+
+// ===== REGISTRATION & USER MANAGEMENT =====
+
+// --- 申請フォーム送信 ---
+async function submitRegistration() {
+  const email = (document.getElementById('reg-email').value || '').trim();
+  const name  = (document.getElementById('reg-name').value || '').trim();
+  const gen   = (document.getElementById('reg-generation').value || '').trim();
+  const grade = document.getElementById('reg-grade').value;
+  const errEl = document.getElementById('reg-error');
+  errEl.style.display = 'none';
+
+  if(!email || !name || !gen || !grade) {
+    errEl.textContent = 'すべての項目を入力してください';
+    errEl.style.display = 'block'; return;
+  }
+  if(!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+    errEl.textContent = 'メールアドレスの形式が正しくありません';
+    errEl.style.display = 'block'; return;
+  }
+
+  // 既存ユーザーチェック
+  const users = window._fbUsersCache || {};
+  const key = email.replace(/[.@]/g,'_');
+  if(users[key]) {
+    const st = users[key].status;
+    if(st === 'active') { errEl.textContent = 'このメールアドレスはすでに登録済みです'; errEl.style.display = 'block'; return; }
+    if(st === 'pending') { errEl.textContent = 'このメールアドレスはすでに申請済みです（承認をお待ちください）'; errEl.style.display = 'block'; return; }
+  }
+
+  const btn = document.getElementById('reg-submit-btn');
+  btn.disabled = true; btn.textContent = '申請中...';
+
+  const userData = {
+    email, name, generation: gen, grade,
+    status: 'pending',
+    canPost: false,
+    appliedAt: new Date().toISOString(),
+    approvedAt: null,
+    passHash: null,
+    token: null,
+  };
+
+  // Firestoreに保存
+  const allUsers = { ...users, [key]: userData };
+
+  // Firebase がまだ初期化されていない場合は最大5秒待つ
+  if(!window._fbSaveUsersSummary) {
+    errEl.textContent = 'サーバーに接続中です。少し待ってから再度お試しください';
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = '申請する';
+    // バックグラウンドで最大5秒リトライ
+    let waited = 0;
+    const waitInterval = setInterval(async () => {
+      waited += 500;
+      if(window._fbSaveUsersSummary) {
+        clearInterval(waitInterval);
+        errEl.style.display = 'none';
+        btn.disabled = true; btn.textContent = '申請中...';
+        try {
+          await window._fbSaveUsersSummary(allUsers);
+          btn.disabled = false; btn.textContent = '申請する';
+          document.getElementById('reg-form-view').style.display = 'none';
+          document.getElementById('reg-success-view').style.display = 'block';
+        } catch(e) {
+          btn.disabled = false; btn.textContent = '申請する';
+          errEl.textContent = '送信に失敗しました。もう一度お試しください';
+          errEl.style.display = 'block';
+        }
+      } else if(waited >= 5000) {
+        clearInterval(waitInterval);
+        errEl.textContent = 'サーバーに接続できません。通信環境を確認してください';
+        errEl.style.display = 'block';
+      }
+    }, 500);
+    return;
+  }
+
+  let ok = false;
+  try {
+    await window._fbSaveUsersSummary(allUsers);
+    ok = true;
+  } catch(e) {
+    ok = false;
+  }
+
+  btn.disabled = false; btn.textContent = '申請する';
+
+  if(ok) {
+    document.getElementById('reg-form-view').style.display = 'none';
+    document.getElementById('reg-success-view').style.display = 'block';
+  } else {
+    errEl.textContent = '送信に失敗しました。もう一度お試しください';
+    errEl.style.display = 'block';
+  }
+}
+
+// --- 管理者ページ描画 ---
+function refreshAdminPage() {
+  const users = window._fbUsersCache || {};
+  const list = Object.values(users);
+  const pending = list.filter(u => u.status === 'pending');
+  const others  = list.filter(u => u.status !== 'pending');
+
+  // バッジ
+  const countLabel = document.getElementById('pending-count-label');
+  if(countLabel) countLabel.textContent = pending.length > 0 ? `未承認 ${pending.length}件` : '未承認なし';
+
+  // 申請テーブル
+  const reqWrap = document.getElementById('req-table-wrap');
+  if(reqWrap) {
+    if(pending.length === 0) {
+      reqWrap.innerHTML = '<div class="empty-state">現在、承認待ちの申請はありません</div>';
+    } else {
+      reqWrap.innerHTML = `<table class="req-table">
+        <thead><tr><th>名前</th><th>メール</th><th>期</th><th>学年</th><th>申請日</th><th>操作</th></tr></thead>
+        <tbody>${pending.map(u => `
+          <tr>
+            <td><strong>${escHtml(u.name)}</strong></td>
+            <td style="font-size:12px">${escHtml(u.email)}</td>
+            <td>${escHtml(u.generation)}</td>
+            <td>${escHtml(u.grade)}</td>
+            <td style="font-size:12px;color:#888">${u.appliedAt ? u.appliedAt.slice(0,10) : '-'}</td>
+            <td>
+              <button class="btn-approve" onclick="approveUser('${escHtml(u.email)}')">✓ 承認</button>
+              <button class="btn-reject" onclick="rejectUser('${escHtml(u.email)}')">✗ 拒否</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
+
+  // 会員テーブル
+  const memWrap = document.getElementById('member-table-wrap');
+  if(memWrap) {
+    if(others.length === 0) {
+      memWrap.innerHTML = '<div class="empty-state">まだ登録済み会員はいません</div>';
+    } else {
+      memWrap.innerHTML = `<table class="req-table">
+        <thead><tr><th>名前</th><th>メール</th><th>期</th><th>学年</th><th>投稿</th><th>ステータス</th><th>操作</th></tr></thead>
+        <tbody>${others.map(u => {
+          const badge = u.status === 'active'
+            ? '<span class="badge-status badge-active">有効</span>'
+            : u.status === 'approved'
+            ? '<span class="badge-status badge-approved">設定待ち</span>'
+            : u.status === 'revoked'
+            ? '<span class="badge-status badge-revoked">無効</span>'
+            : '<span class="badge-status badge-rejected">拒否</span>';
+          const postToggle = u.status === 'active'
+            ? `<button class="${u.canPost ? 'btn-approve' : 'btn-reject'}" style="font-size:11px;padding:3px 8px" onclick="togglePostPerm('${escHtml(u.email)}')">${u.canPost ? '✓ 許可中' : '✗ 不可'}</button>`
+            : '-';
+          return `<tr>
+            <td><strong>${escHtml(u.name)}</strong></td>
+            <td style="font-size:12px">${escHtml(u.email)}</td>
+            <td>${escHtml(u.generation)}</td>
+            <td>${escHtml(u.grade)}</td>
+            <td>${postToggle}</td>
+            <td>${badge}</td>
+            <td><button class="btn-revoke" onclick="revokeUser('${escHtml(u.email)}')">無効化</button></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>`;
+    }
+  }
+}
+
+// バッジ更新
+function updateReqBadge() {
+  const users = window._fbUsersCache || {};
+  const pendingCount = Object.values(users).filter(u => u.status === 'pending').length;
+  const badge = document.getElementById('nav-req-badge');
+  const drawerBadge = document.getElementById('drawer-req-badge');
+  if(pendingCount > 0 && isAdmin) {
+    if(badge) { badge.textContent = pendingCount; badge.style.display = 'inline-flex'; }
+    if(drawerBadge) { drawerBadge.textContent = pendingCount; drawerBadge.style.display = 'inline-flex'; }
+  } else {
+    if(badge) badge.style.display = 'none';
+    if(drawerBadge) drawerBadge.style.display = 'none';
+  }
+}
+
+// --- 承認処理 ---
+async function approveUser(email) {
+  if(!confirm(`「${email}」を承認してパスワード設定メールを送りますか？`)) return;
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = email.replace(/[.@]/g,'_');
+  if(!users[key]) return;
+
+  // トークン生成
+  const token = btoa(email + ':' + Date.now() + ':' + Math.random().toString(36));
+  users[key] = { ...users[key], status: 'approved', approvedAt: new Date().toISOString(), token };
+  await window._fbSaveUsersSummary(users);
+
+  // パスワード設定リンク
+  const setPassUrl = location.href.split('?')[0] + '?setpass=' + encodeURIComponent(token);
+
+  // EmailJS でメール送信
+  await sendApprovalEmail(users[key], setPassUrl);
+  showToast('✅ 承認しました。パスワード設定メールを送信しました');
+}
+
+// --- 拒否処理 ---
+async function rejectUser(email) {
+  if(!confirm(`「${email}」の申請を拒否しますか？`)) return;
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = email.replace(/[.@]/g,'_');
+  if(!users[key]) return;
+  users[key] = { ...users[key], status: 'rejected' };
+  await window._fbSaveUsersSummary(users);
+  showToast('申請を拒否しました');
+}
+
+// --- 投稿権限トグル ---
+async function togglePostPerm(email) {
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = email.replace(/[.@]/g,'_');
+  if(!users[key]) return;
+  users[key] = { ...users[key], canPost: !users[key].canPost };
+  await window._fbSaveUsersSummary(users);
+  showToast(users[key].canPost ? '✅ 投稿権限を付与しました' : '投稿権限を剥奪しました');
+}
+
+// --- 無効化 ---
+async function revokeUser(email) {
+  if(!confirm(`「${email}」を無効化しますか？`)) return;
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = email.replace(/[.@]/g,'_');
+  if(!users[key]) return;
+  users[key] = { ...users[key], status: 'revoked', passHash: null, token: null };
+  await window._fbSaveUsersSummary(users);
+  showToast('ユーザーを無効化しました');
+}
+
+// --- EmailJS でパスワード設定メール送信 ---
+async function sendApprovalEmail(user, setPassUrl) {
+  // ★ EmailJS の設定値をここに入力してください
+  const EMAILJS_PUBLIC_KEY  = '8Wvzghh7YZX82-AM0';
+  const EMAILJS_SERVICE_ID  = 'service_vtw4khr';
+  const EMAILJS_TEMPLATE_ID = 'template_ceo8vyg';
+
+  if(EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+    // 未設定の場合はURLをトーストで表示（テスト用）
+    console.log('[EmailJS未設定] パスワード設定URL:', setPassUrl);
+    showToast('⚠️ EmailJS未設定。コンソールにURLを出力しました');
+    return;
+  }
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email:  user.email,
+      to_name:   user.name,
+      setpass_url: setPassUrl,
+      site_name: 'Magic Clover',
+    }, EMAILJS_PUBLIC_KEY);
+  } catch(e) {
+    console.error('[EmailJS] 送信エラー:', e);
+    showToast('⚠️ メール送信に失敗しました。URLをコンソールで確認してください');
+    console.log('パスワード設定URL:', setPassUrl);
+  }
+}
+
+// --- URLトークンチェック（パスワード設定ページ） ---
+async function checkSetPassToken() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get('setpass');
+  if(!token) return;
+
+  // キャッシュから検索、なければ Firestore から直接取得を試みる
+  let users = window._fbUsersCache || {};
+  let user = Object.values(users).find(u => u.token === token && u.status === 'approved');
+
+  // キャッシュにない場合、_fbLoadUsersOnce があれば使う
+  if(!user && typeof window._fbLoadUsersOnce === 'function') {
+    users = await window._fbLoadUsersOnce();
+    if(users) {
+      window._fbUsersCache = users;
+      user = Object.values(users).find(u => u.token === token && u.status === 'approved');
+    }
+  }
+
+  if(!user) {
+    showToast('⚠️ リンクが無効または期限切れです');
+    return;
+  }
+  window._setPassToken = token;
+  window._setPassUser = user;
+  document.getElementById('setpass-email-display').textContent = `メールアドレス: ${user.email}`;
+  showPage('setpass');
+}
+
+// --- パスワード設定バリデーション ---
+function validateSetPass() {
+  const p1 = document.getElementById('setpass-pass1').value;
+  const p2 = document.getElementById('setpass-pass2').value;
+  const btn = document.getElementById('setpass-btn');
+  const err = document.getElementById('setpass-error');
+  err.style.display = 'none';
+  btn.disabled = !(p1.length >= 8 && p1 === p2);
+}
+
+// --- パスワード設定実行 ---
+async function doSetPassword() {
+  const pass = document.getElementById('setpass-pass1').value;
+  const user = window._setPassUser;
+  if(!user || !pass) return;
+  const btn = document.getElementById('setpass-btn');
+  btn.disabled = true; btn.textContent = '設定中...';
+
+  const hash = await sha256(pass);
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = user.email.replace(/[.@]/g,'_');
+  users[key] = { ...users[key], status: 'active', passHash: hash, token: null };
+  await window._fbSaveUsersSummary(users);
+
+  // 自動ログイン
+  const expiry = Date.now() + SESSION_EXPIRE_MS;
+  try { localStorage.setItem(LS_CRED_KEY, JSON.stringify({ e: btoa(user.email), p: btoa(pass), expiry, remember: false, isAdmin: false })); } catch(e) {}
+  _applyLogin(user.email, users[key]);
+
+  // URLからクエリを除去
+  history.replaceState(null, '', location.pathname);
+
+  showToast('✅ パスワードを設定しました！');
+  showPage('club');
+}
+
 // ===== INIT =====
 // Firebase ESM モジュールが VIDEOS を上書きしてから _appInit() を呼ぶ。
 // （ESM が使えない環境 / firebaseConfig 未設定時のフォールバックとして
 //   DOMContentLoaded でも呼ばれるが、2重実行防止のガードを入れている）
 let _appInitDone = false;
-window._appInit = function() {
+window._appInit = async function() {
   if (_appInitDone) return;
   _appInitDone = true;
   loadMeta();
@@ -2663,11 +3443,14 @@ window._appInit = function() {
   renderTags();
   renderGrid();
   // セッションが有効なら club へ、なければ login へ
-  if(tryAutoLogin()) {
+  const ok = await tryAutoLogin();
+  if(ok) {
     showPage('club');
   } else {
     document.getElementById('login-page').classList.add('active');
   }
+  // URLにトークンがあればパスワード設定ページへ
+  checkSetPassToken();
 };
 
 // Firebase が設定されていない場合や読み込み失敗時のフォールバック
