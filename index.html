@@ -1393,7 +1393,7 @@ nav {
       <span>📋 マイプレイリスト <span id="my-pl-count" style="font-weight:400;font-size:13px;color:#aaa"></span></span>
       <button onclick="openMyNewPlaylistModal()" style="background:var(--clover);color:#1a2a00;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">＋ 新規作成</button>
     </div>
-    <div id="my-playlist-grid"></div>
+    <div id="my-playlist-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 0"></div>
   </div>
   <div class="mypage-section">
     <div class="mypage-section-title">♥ いいねした動画 <span id="liked-count" style="font-weight:400;font-size:13px;color:#aaa"></span></div>
@@ -2104,7 +2104,9 @@ function _applyLogin(email, userData) {
   currentUserEmail = email;
   currentUserData = userData || null;
   isAdmin = _ADMINS.some(a => { try { return atob(a) === email; } catch(e) { return false; } });
-  // 投稿権限: 管理者 or userDataのcanPostがtrue
+  // または Firebase上のisAdminフラグ
+  if(!isAdmin && userData && userData.isAdmin) isAdmin = true;
+  // 投稿権限: 管理者 or クロース長（canPost=true）
   canPost = isAdmin || (userData && userData.canPost === true);
   document.getElementById('nav-auth').style.display = 'flex';
   document.getElementById('nav-guest').style.display = 'none';
@@ -2936,21 +2938,24 @@ function renderPlaylistPage() {
   sharedPls.forEach((pl, i) => {
     const key = pl.ownerEmail || '不明';
     if(!groups[key]) {
-      // ownerの期・名前をFirebase usersキャッシュから取得
-      const users = window._fbUsersCache || {};
-      const uKey = key.replace(/[.@]/g,'_');
-      const u = users[uKey];
-      const generation = (u && u.generation) ? u.generation : '';
-      const ownerName = pl.ownerName || key;
-      groups[key] = { generation, ownerName, items: [] };
+      // ownerName には共有時に「期＋名前」が保存済み
+      // なければFirebaseキャッシュから補完、それもなければメアド
+      let label = pl.ownerName || '';
+      if(!label || label === pl.ownerEmail) {
+        const users = window._fbUsersCache || {};
+        const uKey = key.replace(/[.@]/g,'_');
+        const u = users[uKey];
+        const gen = (u && u.generation) ? u.generation : '';
+        const name = (u && u.name) ? u.name : key;
+        label = gen ? `${gen} ${name}` : name;
+      }
+      groups[key] = { label, items: [] };
     }
     groups[key].items.push({ pl, i });
   });
 
   wrap.innerHTML = Object.values(groups).map(group => {
-    const heading = group.generation
-      ? `${escHtml(group.generation)} ${escHtml(group.ownerName)}のおすすめ`
-      : `${escHtml(group.ownerName)}のおすすめ`;
+    const heading = `${escHtml(group.label)}のおすすめ`;
     const cards = group.items.map(({ pl, i }) => `
       <div class="playlist-card" onclick="openSharedPlaylist(${i})">
         <div class="playlist-card-icon">⭐</div>
@@ -3020,18 +3025,20 @@ function renderMypagePlaylist() {
     const firstVid = pl.videos.length > 0 ? VIDEOS.find(v => v.id === pl.videos[0]) : null;
     const thumb = firstVid && !firstVid.unlisted ? `https://img.youtube.com/vi/${firstVid.yt}/mqdefault.jpg` : '';
     const isShared = !!(window._fbSharedPlaylistsCache || []).find(sp => sp.id === pl.id);
-    return `<div class="mypage-card" style="position:relative" onclick="openMyPlaylist(${i})">
-      <div class="mypage-thumb" style="position:relative">
-        ${thumb ? `<img src="${thumb}" alt="" style="width:100%;height:100%;object-fit:cover">` : `<div style="width:100%;height:100%;background:#1a2535;display:flex;align-items:center;justify-content:center;font-size:28px">📋</div>`}
-        <div style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,0.7);color:#fff;font-size:11px;padding:2px 6px;border-radius:3px">${pl.videos.length}本</div>
+    return `<div class="video-card" style="position:relative" onclick="openMyPlaylist(${i})">
+      <div style="width:100%;aspect-ratio:16/9;overflow:hidden;background:#1a2535;position:relative">
+        ${thumb
+          ? `<img src="${thumb}" alt="" style="width:100%;height:100%;object-fit:cover">`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px">📋</div>`}
+        <div style="position:absolute;bottom:4px;right:6px;background:rgba(0,0,0,0.7);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px">${pl.videos.length}本</div>
         ${isShared ? '<div style="position:absolute;top:4px;left:6px;background:#9acd32;color:#1a2a00;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px">共有中</div>' : ''}
       </div>
-      <div class="mypage-info">
-        <div class="mypage-card-title" style="font-weight:700">${escHtml(pl.name)}</div>
+      <div style="padding:8px 10px 4px">
+        <div style="font-size:12px;font-weight:700;color:var(--text);line-height:1.4;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escHtml(pl.name)}</div>
       </div>
       <div style="display:flex;gap:4px;padding:0 8px 8px;flex-wrap:wrap" onclick="event.stopPropagation()">
         <button onclick="openMyAddVideoModal(${i})" style="flex:1;background:#f0f0f0;border:none;border-radius:4px;padding:4px 0;font-size:11px;cursor:pointer;font-family:inherit">＋ 動画</button>
-        ${canPost ? `<button onclick="toggleShareMyPlaylist(${i})" style="flex:1;background:${isShared?'#e8f5e0':'#f0f0f0'};border:none;border-radius:4px;padding:4px 0;font-size:11px;cursor:pointer;font-family:inherit;color:${isShared?'#2a7020':'#555'}">${isShared?'✅共有中':'🌐 共有'}</button>` : ''}
+        ${canPost ? `<button onclick="toggleShareMyPlaylist(${i})" style="flex:1;background:${isShared?'#e8f5e0':'#f0f0f0'};border:none;border-radius:4px;padding:4px 0;font-size:11px;cursor:pointer;font-family:inherit;color:${isShared?'#2a7020':'#555'}">${isShared?'✅共有':'🌐共有'}</button>` : ''}
         <button onclick="deleteMyPlaylist(${i})" style="background:#fff0f0;border:none;border-radius:4px;padding:4px 6px;font-size:11px;cursor:pointer;color:#c02020">🗑️</button>
       </div>
     </div>`;
@@ -3084,16 +3091,20 @@ async function toggleShareMyPlaylist(i) {
     sharedPls.splice(sharedIdx, 1);
     showToast('共有を解除しました');
   } else {
-    // 共有開始
+    // 共有開始：期＋名前を ownerLabel に保存
     const users = window._fbUsersCache || {};
-    const key = currentUserEmail.replace(/[.@]/g,'_');
-    const ownerName = (users[key] && users[key].name) || currentUserEmail;
+    const uKey = currentUserEmail.replace(/[.@]/g,'_');
+    const u = users[uKey];
+    const ownerName = (u && u.name) ? u.name : currentUserEmail;
+    const generation = (u && u.generation) ? u.generation : '';
+    const ownerLabel = generation ? `${generation} ${ownerName}` : ownerName;
     sharedPls.push({
       id: pl.id,
       name: pl.name,
       videos: pl.videos,
       ownerEmail: currentUserEmail,
-      ownerName,
+      ownerName: ownerLabel,   // 期＋名前をまとめて保存
+      generation,
       sharedAt: new Date().toISOString(),
     });
     showToast('✅ おすすめプレイリストに共有しました');
@@ -3240,10 +3251,13 @@ async function createPlaylist() {
   if(!name) { showToast('名前を入力してください'); return; }
   const sharedPls = [...(window._fbSharedPlaylistsCache || [])];
   const users = window._fbUsersCache || {};
-  const key = currentUserEmail.replace(/[.@]/g,'_');
-  const ownerName = (users[key] && users[key].name) || currentUserEmail;
+  const uKey = currentUserEmail.replace(/[.@]/g,'_');
+  const u = users[uKey];
+  const ownerName = (u && u.name) ? u.name : currentUserEmail;
+  const generation = (u && u.generation) ? u.generation : '';
+  const ownerLabel = generation ? `${generation} ${ownerName}` : ownerName;
   const id = 'spl_' + Date.now();
-  sharedPls.push({ id, name, videos: [], ownerEmail: currentUserEmail, ownerName, sharedAt: new Date().toISOString() });
+  sharedPls.push({ id, name, videos: [], ownerEmail: currentUserEmail, ownerName: ownerLabel, generation, sharedAt: new Date().toISOString() });
   window._fbSharedPlaylistsCache = sharedPls;
   await window._fbSaveSharedPlaylists(sharedPls);
   closeModal('modal-new-playlist');
@@ -3877,7 +3891,7 @@ function refreshAdminPage() {
       memWrap.innerHTML = searchBar + '<div class="empty-state">' + (q ? '該当する会員が見つかりません' : 'まだ登録済み会員はいません') + '</div>';
     } else {
       memWrap.innerHTML = searchBar + `<table class="req-table">
-        <thead><tr><th>名前</th><th>メール</th><th>期</th><th>学年</th><th>投稿</th><th>管理者</th><th>ステータス</th><th>操作</th></tr></thead>
+        <thead><tr><th>名前</th><th>メール</th><th>期</th><th>学年</th><th>投稿</th><th>ロール</th><th>ステータス</th><th>操作</th></tr></thead>
         <tbody>${filtered.map(u => {
           const badge = u.status === 'active'
             ? '<span class="badge-status badge-active">有効</span>'
@@ -3886,17 +3900,20 @@ function refreshAdminPage() {
             : u.status === 'revoked'
             ? '<span class="badge-status badge-revoked">無効</span>'
             : '<span class="badge-status badge-rejected">拒否</span>';
+          // 投稿権限はロール列で管理するため表示は参照のみ
           const postToggle = u.status === 'active'
-            ? `<button class="${u.canPost ? 'btn-approve' : 'btn-reject'}" style="font-size:11px;padding:3px 8px" onclick="togglePostPerm('${escHtml(u.email)}')">${u.canPost ? '✓ 許可中' : '✗ 不可'}</button>`
+            ? `<span style="font-size:11px;color:${u.canPost?'#2a7020':'#aaa'}">${u.canPost ? '✓ 有' : '－'}</span>`
             : '-';
-          const adminToggle = `<button class="${u.isAdmin ? 'btn-approve' : 'btn-revoke'}" style="font-size:11px;padding:3px 8px" onclick="toggleAdminPerm('${escHtml(u.email)}')">${u.isAdmin ? '⭐ 管理者' : '一般'}</button>`;
+          // ロール列：管理者・クロース長の2ボタン
+          const adminBtn = `<button class="${u.isAdmin ? 'btn-approve' : 'btn-revoke'}" style="font-size:10px;padding:2px 7px;margin-bottom:3px;display:block;width:100%" onclick="toggleAdminPerm('${escHtml(u.email)}')">${u.isAdmin ? '⭐管理者' : '管理者'}</button>`;
+          const closeBtn = `<button class="${u.canPost && !u.isAdmin ? 'btn-approve' : 'btn-revoke'}" style="font-size:10px;padding:2px 7px;display:block;width:100%" onclick="toggleCloseLeader('${escHtml(u.email)}')">${u.canPost && !u.isAdmin ? '✓クロース長' : 'クロース長'}</button>`;
           return `<tr>
             <td><strong>${escHtml(u.name)}</strong></td>
             <td style="font-size:12px">${escHtml(u.email)}</td>
             <td>${escHtml(u.generation)}</td>
             <td>${escHtml(u.grade)}</td>
             <td>${postToggle}</td>
-            <td>${adminToggle}</td>
+            <td style="min-width:90px">${adminBtn}${closeBtn}</td>
             <td>${badge}</td>
             <td><button class="btn-revoke" onclick="revokeUser('${escHtml(u.email)}')">無効化</button></td>
           </tr>`;
@@ -3972,9 +3989,22 @@ async function toggleAdminPerm(email) {
   const isCurrentlyAdmin = !!users[key].isAdmin;
   const action = isCurrentlyAdmin ? '管理者権限を剥奪' : '管理者権限を付与';
   if(!confirm(`⚠️ 警告\n\n「${users[key].name}（${email}）」に${action}しますか？\n\n管理者は全会員の承認・拒否・権限変更が可能になります。`)) return;
-  users[key] = { ...users[key], isAdmin: !isCurrentlyAdmin };
+  // 管理者付与時はcanPostも自動でtrueに
+  users[key] = { ...users[key], isAdmin: !isCurrentlyAdmin, canPost: !isCurrentlyAdmin ? true : users[key].canPost };
   await window._fbSaveUsersSummary(users);
   showToast(isCurrentlyAdmin ? '管理者権限を剥奪しました' : '✅ 管理者権限を付与しました');
+}
+
+// --- クロース長権限トグル（確認なし・canPostのみ） ---
+async function toggleCloseLeader(email) {
+  const users = { ...(window._fbUsersCache || {}) };
+  const key = email.replace(/[.@]/g,'_');
+  if(!users[key]) return;
+  if(users[key].isAdmin) { showToast('管理者はクロース長ボタンで変更できません（管理者を先に解除してください）'); return; }
+  const isCurrently = !!users[key].canPost;
+  users[key] = { ...users[key], canPost: !isCurrently };
+  await window._fbSaveUsersSummary(users);
+  showToast(isCurrently ? 'クロース長権限を剥奪しました' : '✅ クロース長権限を付与しました');
 }
 
 // --- 無効化（確認あり・危険な操作なので残す） ---
