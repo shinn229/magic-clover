@@ -2938,17 +2938,13 @@ function renderPlaylistPage() {
   sharedPls.forEach((pl, i) => {
     const key = pl.ownerEmail || '不明';
     if(!groups[key]) {
-      // ownerName には共有時に「期＋名前」が保存済み
-      // なければFirebaseキャッシュから補完、それもなければメアド
-      let label = pl.ownerName || '';
-      if(!label || label === pl.ownerEmail) {
-        const users = window._fbUsersCache || {};
-        const uKey = key.replace(/[.@]/g,'_');
-        const u = users[uKey];
-        const gen = (u && u.generation) ? u.generation : '';
-        const name = (u && u.name) ? u.name : key;
-        label = gen ? `${gen} ${name}` : name;
-      }
+      // 常にFirebaseキャッシュから期＋名前を引く（保存値より優先）
+      const users = window._fbUsersCache || {};
+      const uKey = key.replace(/[.@]/g,'_');
+      const u = users[uKey];
+      const gen  = (u && u.generation) ? u.generation : (pl.generation || '');
+      const name = (u && u.name)       ? u.name       : (pl.ownerName  || key);
+      const label = gen ? `${gen} ${name}` : name;
       groups[key] = { label, items: [] };
     }
     groups[key].items.push({ pl, i });
@@ -3344,10 +3340,16 @@ function showPage(name) {
     const gr = document.getElementById('reg-grade'); if(gr) gr.value = '';
   }
   if(name !== 'player') {
+    // 動画プレイヤーを停止
     document.getElementById('yt-player').src = '';
     const lp = document.getElementById('local-player');
     if(lp) { lp.pause(); lp.src = ''; lp.style.display = 'none'; }
     document.getElementById('yt-player').style.display = '';
+  }
+  if(name !== 'playlist-player') {
+    // プレイリストプレイヤーを停止
+    const plPlayer = document.getElementById('pl-yt-player');
+    if(plPlayer) plPlayer.src = '';
   }
   window.scrollTo(0,0);
 }
