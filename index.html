@@ -423,7 +423,7 @@ nav {
 .mypage-header { margin-bottom: 28px; }
 .mypage-title { font-size: 22px; font-weight: 700; color: #111; }
 .mypage-section { margin-bottom: 32px; }
-.mypage-section-title { font-size: 16px; font-weight: 700; color: var(--clover); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(154,205,50,0.3); }
+.mypage-section-title { font-size: 16px; font-weight: 700; color: var(--clover); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(154,205,50,0.3); flex-wrap: wrap; }
 .mypage-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 @media (max-width: 700px) { .mypage-grid { grid-template-columns: repeat(2,1fr); } }
 @media (max-width: 420px) { .mypage-grid { grid-template-columns: 1fr; } }
@@ -1025,6 +1025,13 @@ nav {
 .pl-add-video-item.in-list { background: #f0f7e0; }
 .pl-add-video-thumb { width: 72px; height: 40px; object-fit: cover; border-radius: 3px; flex-shrink: 0; background: #1a2535; }
 .playlist-empty { text-align: center; padding: 60px 20px; color: #aaa; font-size: 14px; }
+.playlist-owner-group { margin-bottom: 28px; }
+.playlist-owner-heading {
+  font-size: 14px; font-weight: 700; color: #555;
+  padding: 8px 4px 10px; margin-bottom: 4px;
+  border-bottom: 2px solid rgba(154,205,50,0.4);
+  letter-spacing: 0.3px;
+}
 /* テーブルスクロール（スマホ） */
 #req-table-wrap, #member-table-wrap { overflow-x: auto; }
 @media (max-width: 600px) {
@@ -1398,13 +1405,14 @@ nav {
   </div>
 </div>
 
-<!-- マイプレイリスト 新規作成モーダル -->
-<div class="modal-overlay" id="modal-my-new-playlist">
+<!-- マイプレイリスト 新規作成モーダル（ページ外・body直下） -->
+<div class="modal-overlay" id="modal-my-new-playlist" onclick="if(event.target===this)closeModal('modal-my-new-playlist')">
   <div class="modal-box" style="max-width:440px">
     <h3>📋 マイプレイリストを作成</h3>
     <div style="margin-bottom:14px">
       <label style="font-size:13px;font-weight:700;color:#555;display:block;margin-bottom:6px">プレイリスト名</label>
-      <input type="text" id="my-new-playlist-name" class="modal-input" placeholder="例：お気に入りマジック" maxlength="40">
+      <input type="text" id="my-new-playlist-name" class="modal-input" placeholder="例：お気に入りマジック" maxlength="40"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();createMyPlaylist()}">
     </div>
     <div class="modal-btns">
       <button class="modal-btn-cancel" onclick="closeModal('modal-my-new-playlist')">キャンセル</button>
@@ -1413,8 +1421,8 @@ nav {
   </div>
 </div>
 
-<!-- マイプレイリスト 動画追加モーダル -->
-<div class="modal-overlay" id="modal-my-add-video">
+<!-- マイプレイリスト 動画追加モーダル（ページ外・body直下） -->
+<div class="modal-overlay" id="modal-my-add-video" onclick="if(event.target===this)closeModal('modal-my-add-video')">
   <div class="modal-box-wide" style="max-width:520px;max-height:80vh;overflow-y:auto">
     <h3 id="my-add-video-modal-title" style="margin-bottom:12px">🎬 動画を追加</h3>
     <input type="text" id="my-pl-video-search" placeholder="動画を検索..."
@@ -2865,7 +2873,7 @@ function validateSubmit() {
   const hasSource = postVideoSrc === 'yt' ? !!parsedYtId : !!postVideoFileData;
   document.getElementById('submit-btn').disabled = !(hasSource && postTags.length > 0);
 }
-function submitVideo() {
+async function submitVideo() {
   const hasSource = postVideoSrc === 'yt' ? !!parsedYtId : !!postVideoFileData;
   if(!hasSource || postTags.length===0) return;
   const titleInput = document.getElementById('post-title').value.trim();
@@ -2878,17 +2886,27 @@ function submitVideo() {
     const unlisted = isUnlisted(urlVal);
     newVideo.yt = parsedYtId;
     newVideo.unlisted = unlisted;
-    newVideo.title = titleInput || ('YouTube動画 ' + parsedYtId + (authorInput?' / '+authorInput:''));
-  } else {
-    // ローカル動画ファイル
-    newVideo.yt = '';
-    newVideo.unlisted = true; // 外部からはアクセス不可なのでlocalとして扱う
-    newVideo.localVideo = postVideoFileData; // base64
-    newVideo.title = titleInput || (postVideoFileName || 'ローカル動画') + (authorInput?' / '+authorInput:'');
-    // サムネがない場合はフィルムアイコン表示
-    if(!postCustomThumb) {
-      newVideo.localThumb = true;
+    if(titleInput) {
+      newVideo.title = titleInput;
+    } else {
+      // タイトル未入力ならYouTube oEmbedからタイトルを取得
+      showToast('YouTubeからタイトルを取得中...');
+      let fetchedTitle = '';
+      try {
+        const res = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${parsedYtId}&format=json`);
+        if(res.ok) {
+          const data = await res.json();
+          fetchedTitle = data.title || '';
+        }
+      } catch(e) {}
+      newVideo.title = fetchedTitle || ('YouTube動画 ' + parsedYtId + (authorInput?' / '+authorInput:''));
     }
+  } else {
+    newVideo.yt = '';
+    newVideo.unlisted = true;
+    newVideo.localVideo = postVideoFileData;
+    newVideo.title = titleInput || (postVideoFileName || 'ローカル動画') + (authorInput?' / '+authorInput:'');
+    if(!postCustomThumb) newVideo.localThumb = true;
   }
   if(postCustomThumb) newVideo.customThumb = postCustomThumb;
   VIDEOS.unshift(newVideo);
@@ -2904,29 +2922,54 @@ function renderPlaylistPage() {
   const sharedPls = window._fbSharedPlaylistsCache || [];
   const wrap = document.getElementById('playlist-list-wrap');
   if(!wrap) return;
-  // 管理者は「＋ 新規作成」ボタンを表示
-  const titleHtml = document.querySelector('#playlist-page .playlist-header');
-  if(titleHtml) {
-    const btn = titleHtml.querySelector('.btn-new-playlist');
-    if(btn) btn.style.display = (isAdmin || canPost) ? '' : 'none';
-  }
+  // クロース権限者は「＋ 新規作成」ボタンを表示
+  const headerBtn = document.querySelector('#playlist-page .btn-new-playlist');
+  if(headerBtn) headerBtn.style.display = canPost ? '' : 'none';
+
   if(sharedPls.length === 0) {
     wrap.innerHTML = '<div class="playlist-empty">⭐ まだ共有プレイリストがありません</div>';
     return;
   }
-  wrap.innerHTML = sharedPls.map((pl, i) => `
-    <div class="playlist-card" onclick="openSharedPlaylist(${i})">
-      <div class="playlist-card-icon">⭐</div>
-      <div class="playlist-card-info">
-        <div class="playlist-card-name">${escHtml(pl.name)}</div>
-        <div class="playlist-card-count">${pl.videos.length} 本 ／ 作成: ${escHtml(pl.ownerName||'')}</div>
+
+  // ownerEmailごとにグループ化
+  const groups = {};
+  sharedPls.forEach((pl, i) => {
+    const key = pl.ownerEmail || '不明';
+    if(!groups[key]) {
+      // ownerの期・名前をFirebase usersキャッシュから取得
+      const users = window._fbUsersCache || {};
+      const uKey = key.replace(/[.@]/g,'_');
+      const u = users[uKey];
+      const generation = (u && u.generation) ? u.generation : '';
+      const ownerName = pl.ownerName || key;
+      groups[key] = { generation, ownerName, items: [] };
+    }
+    groups[key].items.push({ pl, i });
+  });
+
+  wrap.innerHTML = Object.values(groups).map(group => {
+    const heading = group.generation
+      ? `${escHtml(group.generation)} ${escHtml(group.ownerName)}のおすすめ`
+      : `${escHtml(group.ownerName)}のおすすめ`;
+    const cards = group.items.map(({ pl, i }) => `
+      <div class="playlist-card" onclick="openSharedPlaylist(${i})">
+        <div class="playlist-card-icon">⭐</div>
+        <div class="playlist-card-info">
+          <div class="playlist-card-name">${escHtml(pl.name)}</div>
+          <div class="playlist-card-count">${pl.videos.length} 本</div>
+        </div>
+        ${(isAdmin || (canPost && pl.ownerEmail === currentUserEmail)) ? `
+        <div class="playlist-card-actions" onclick="event.stopPropagation()">
+          <button class="btn-pl-del" onclick="deleteSharedPlaylist(${i})">🗑️</button>
+        </div>` : ''}
       </div>
-      ${(isAdmin || (canPost && pl.ownerEmail === currentUserEmail)) ? `
-      <div class="playlist-card-actions" onclick="event.stopPropagation()">
-        <button class="btn-pl-del" onclick="deleteSharedPlaylist(${i})">🗑️</button>
-      </div>` : ''}
-    </div>
-  `).join('');
+    `).join('');
+    return `
+      <div class="playlist-owner-group">
+        <div class="playlist-owner-heading">♣ ${heading}</div>
+        ${cards}
+      </div>`;
+  }).join('');
 }
 
 async function deleteSharedPlaylist(i) {
